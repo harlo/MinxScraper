@@ -1,0 +1,5 @@
+M2X_Conf = {
+	'feed_id' : "what is that?",
+	'api_key' : "put that here!",
+	'master_key' : "and that too"
+}

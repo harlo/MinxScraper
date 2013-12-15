@@ -1,0 +1,14 @@
+{
+	"name" : "Minx Scraper",
+	"description" : "Create screen-scraping jobs on the fly",
+	"version" : "0.1",
+	"app" : {
+		"background" : {
+			"scripts" : ["minx_background.js"]
+		}
+	},
+	"icons" : {
+		"16" : "minx_logo_16.png",
+		"128" : "minx_logo_128.png"
+	}
+}
