@@ -1,9 +1,33 @@
 body {
 	font-family:'arial';
+	margin:0;
+	padding:0;
 }
 
 ul {
 	list-style-type:none;
 	margin:0;
 	padding:0;
+}
+
+#IS_selection_popup {
+	position:absolute;
+	border:1px solid #999;
+	padding:2px 10px;
+	margin:0;
+	display:none;
+	background-color:#fff;
+}
+
+#IS_selection_popup a {
+	color:#fff;
+	background-color:#999;
+	padding:1px 3px;
+	cursor:pointer;
+}
+
+#IS_selection_holder .IS_label {
+	background-color:#cb008a;
+	color:#fff;
+	padding:0 3px;
 }
