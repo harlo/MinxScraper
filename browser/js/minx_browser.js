@@ -1,5 +1,8 @@
 var domId = null;
-var els = null;
+var manifest = {
+	elements: [],
+	config: {},
+};
 var panelId = null;
 var port = null;
 var extId = chrome.runtime.id;
@@ -22,13 +25,12 @@ var contextMenus = {
 function loadDomUtil() {
 	chrome.tabs.query({currentWindow: true, active: true}, function(tabs) {
 		domId = tabs[0].id;
+		manifest.url = tabs[0].url;
 		chrome.tabs.sendMessage(domId, "initDomUtil");
 	});
 }
 
-function loadScraperPanel(sel) {
-	els = sel;
-	
+function loadScraperPanel() {	
 	chrome.windows.create(
 		{
 			'url' : '/layout/minx_browser.html',
@@ -80,13 +82,34 @@ function removeMenuOptions(id) {
 }
 
 function packageManifest() {
-	// TODO!
+	var post = { manifest : manifest }
+	console.info(JSON.stringify(post));
+	console.info(JSON.stringify(post).length);
+	
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", "http://localhost:" + API_PORT, true);
+	xhr.setRequestHeader("Content-type", "application/json");
+	xhr.setRequestHeader("X-MINX-KEY", extId);
+	
+	xhr.onreadystatechange = function() {
+		if(xhr.readyState == 4) {
+			console.info(JSON.parse(xhr.responseText));
+		}
+	};
+	xhr.send(JSON.stringify(post));
+}
+
+function initUiPanelData() {
+	return null;
 }
 
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 	if(message.sender == "domUtils") {
-		initLabeler();
-		loadScraperPanel(message.data);
+		if(message.data == "setElements") {
+			initLabeler();
+			manifest.elements = message.elements;
+			loadScraperPanel();
+		}
 	}
 	
 	console.info("background received");
@@ -102,10 +125,18 @@ chrome.runtime.onConnect.addListener(function(p) {
 		console.info(message);
 		
 		if(message.sender == "uiPanel") {
-			if(message.data == "portionsPrepared") {
-				console.info(els);
+			if(message.data == "schemaPrepared") {
+				console.info(manifest.elements);
 				chrome.windows.remove(panelId);
 				packageManifest();
+			}
+			
+			if(message.data == "connectionEstablished") {
+				port.postMessage({
+					sender: extId,
+					data: "connectionEstablished",
+					initData: initUiPanelData()
+				});
 			}
 		}
 	});	
@@ -114,6 +145,7 @@ chrome.runtime.onConnect.addListener(function(p) {
 chrome.browserAction.onClicked.addListener(function(tab) {
 	chrome.tabs.executeScript(tab.id, {file: "/js/dom_utils.js"});	
 	initOptions();
+	console.info(API_PORT);
 });
 
 chrome.windows.onRemoved.addListener(function(windowId) {

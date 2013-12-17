@@ -58,6 +58,7 @@ function getSelectedNodes() {
 	
 	chrome.runtime.sendMessage(null, {
 		sender: "domUtils",
-		data: els
+		data: "setElements",
+		elements: els
 	});
 }

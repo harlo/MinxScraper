@@ -12,15 +12,30 @@ ul {
 	width:inherit;
 }
 
-#IS_instructions {
-	font-size:0.8em;
+.IS_instructions {
+	font-weight:bold;
+}
+
+#IS_step_config {
+	display:none;
+	font-size:0.7em;
+}
+
+#IS_step_config textarea {
+	width:96%;
+	height:80px;
+}
+
+#IS_step_portions {
+	display:block;
+	font-size:0.7em;
 }
 
 #IS_selection_holder {
 	width:80%;
 	border:1px solid #ccc;
 	padding:3px;
-	font-size:0.7em;
+	font-size:0.95em;
 }
 
 #IS_selection_popup {
@@ -30,19 +45,26 @@ ul {
 	margin:0;
 	display:none;
 	background-color:#fff;
-	font-size:0.65em;
+	font-size:0.85em;
 }
 
-#IS_submit {
+#IS_submit_portions, #IS_submit_config {
 	color:#fff;
 	background-color:#00cbc0;
 	padding:2px 6px;
 	cursor:pointer;
+}
+
+#IS_submit_portions {
 	position:fixed;
 	float:right;
-	display:block;
 	right:10px;
-	font-size:0.65em;
+	display:block;
+}
+
+#IS_submit_config {
+	position:absolute;
+	bottom:10px;
 }
 
 #IS_selection_popup a {

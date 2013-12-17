@@ -7,7 +7,7 @@
 		"default_icon" : "/images/minx_logo_16.png"
 	},
 	"background" : {
-		"scripts" : ["/js/minx_browser.js"]
+		"scripts" : ["/js/conf.js", "/js/minx_browser.js"]
 	},
 	"permissions" : [
 		"tabs", "http://*/*", "https://*/*",

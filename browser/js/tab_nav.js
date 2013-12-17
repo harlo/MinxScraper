@@ -26,6 +26,13 @@ function initSelections(els) {
 	});
 }
 
+function initConfig() {
+	toggleElement($("#IS_step_portions"));
+	toggleElement($("#IS_step_config"));
+	
+	$("#IS_config_iterate_url").val(ctx.manifest.url);
+}
+
 function setLabel() {	
 	var applyLabel = $(".IS_template_" + selectionPopup.attr('rel'));
 	applyLabel.attr('id',"IS_start_" + $(selectionPopup.find('input')[0]).val());
@@ -56,7 +63,7 @@ function parseSelectedPortion() {
 	idx++;
 }
 
-function finish() {
+function finishPortions() {
 	$.ajax({
 		url: "/layout/selection_view.html",
 		dataType: "html",
@@ -68,14 +75,52 @@ function finish() {
 				var templateHolder = $(document.createElement('div'));
 				$(templateHolder).append($(template));
 				
-				ctx.els[i].innerHtml = $(templateHolder).html();				
+				ctx.manifest.elements[i].innerHtml = $(templateHolder).html();				
 			});
-			port.postMessage({
-				sender: "uiPanel",
-				data: "portionsPrepared"
-			});
+
+			initConfig();
 		}
 	});
+}
+
+function finishSchema() {
+	$.each($(".IS_config_form").find('input,select,textarea'), function(i, item) {
+		log($(item));
+		
+		var value = null;
+		var tag = $(item).attr('id');
+		
+		switch($(item).prop('tagName').toLowerCase()) {
+		case "input":
+			if($(item).val() != 0 && $(item).val() != '') {
+				value = $(item).val();
+			}
+			break;
+		case "select":
+			value = $($(item).children('option:selected')[0]).val();
+			break;
+		case "textarea":
+			if($(item).val().length > 1) {
+				value = $(item).val();
+			}
+			break;
+		}
+		
+		if(tag != null && value != null) {
+			ctx.manifest.config[tag] = value;
+		}
+	});
+	
+	log(ctx.manifest.config);
+	
+	port.postMessage({
+		sender: "uiPanel",
+		data: "schemaPrepared"
+	});
+}
+
+function loadAsset(el, val) {
+	log($(el).prop('tagName'));
 }
 
 port = chrome.runtime.connect(extId, {name: "uiPanel"});
@@ -87,6 +132,18 @@ port.onMessage.addListener(function(message) {
 		if(message.data == "portionSelected") {
 			parseSelectedPortion();
 		}
+		
+		if(message.data == "loadAsset") {
+			loadAsset($("#" + message.asset.id), message.asset.value);
+		}
+		
+		if(message.data == "connectionEstablished") {
+			if(message.initData == null) {
+				initSelections(ctx.manifest.elements);
+			} else {
+				// load all this data
+			}
+		}
 	}
 });
 
@@ -94,7 +151,12 @@ $(document).ready(function() {
 	selectionPopup = $("#IS_selection_popup");
 	
 	$("#IS_label_setter").on('click', setLabel);
-	$("#IS_submit").on('click', finish);
 	
-	initSelections(ctx.els);
+	$("#IS_submit_portions").on('click', finishPortions);
+	$("#IS_submit_config").on('click', finishSchema);
+		
+	port.postMessage({
+		sender: "uiPanel",
+		data: "connectionEstablished"
+	});
 });

@@ -8,11 +8,44 @@
 </head>
 
 <body>
-	<p id="IS_instructions">This is your template.  Select the portions in the template that contain data, and label them in a way that makes sense for the data set you're building.  Labels should be lowercase, alphanumeric, and should not contain spaces or special characters.</p>
-	<a id="IS_submit">Done</a>
-	<ul id="IS_selection_holder"></ul>
-	<div id="IS_selection_popup">
-		<p>label: <input type="text" /> <a id="IS_label_setter">OK</a></p>
+	<div id="IS_step_portions">
+		<p class="IS_instructions"><span class="IS_note_bene">Step 1.</span> This is your template.  Select the portions in the template that contain data, and label them in a way that makes sense for the data set you're building.  Labels should be lowercase, alphanumeric, and should not contain spaces or special characters.</p>
+		<a id="IS_submit_portions">Done</a>
+		<ul id="IS_selection_holder"></ul>
+		<div id="IS_selection_popup">
+			<p>label: <input type="text" /> <a id="IS_label_setter">OK</a></p>
+		</div>
+	</div>
+	
+	<div id="IS_step_config">
+		<p class="IS_instructions"><span class="IS_note_bene">Step 2.</span> Now, fill out some info about this scraper.</p>
+		<ul>
+			<li>
+		
+				<p>How frequently should we scrape this feed?</p>
+				<div class="IS_input_req IS_config_form">
+					<input type="text" id="IS_config_period" size="3" value="1" /> 
+					<select id="IS_config_period_mult">
+						<option value="d">day(s)</option>
+						<option value="h">hour(s)</option>
+						<option value="m">minute(s)</option>
+					</select>
+				</div>
+			</li>
+			<li>
+				<p>Modify the request header: <i>(Advanced!)</i></p>
+				<div class="IS_config_form">
+					<textarea id="IS_config_header"></textarea>
+				</div>
+			</li>
+			<li>
+				<p>Iterate over this URL: <i>(Advanced!)</i></p>
+				<div class="IS_config_form">
+					<input type="text" id="IS_config_iterate_url" size="80" />
+				</div>
+			</li>
+		</ul>
+		<a id="IS_submit_config">Done</a>
 	</div>
 </body>
 </html>
