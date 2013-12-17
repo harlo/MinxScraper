@@ -79,6 +79,10 @@ function removeMenuOptions(id) {
 	}
 }
 
+function packageManifest() {
+	// TODO!
+}
+
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 	if(message.sender == "domUtils") {
 		initLabeler();
@@ -96,6 +100,14 @@ chrome.runtime.onConnect.addListener(function(p) {
 	port.onMessage.addListener(function(message) {
 		console.info("background received");
 		console.info(message);
+		
+		if(message.sender == "uiPanel") {
+			if(message.data == "portionsPrepared") {
+				console.info(els);
+				chrome.windows.remove(panelId);
+				packageManifest();
+			}
+		}
 	});	
 });
 

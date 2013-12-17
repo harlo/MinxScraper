@@ -1,6 +1,7 @@
 body {
 	font-family:'arial';
-	margin:0;
+	font-size:18px;
+	margin:6px;
 	padding:0;
 }
 
@@ -8,6 +9,18 @@ ul {
 	list-style-type:none;
 	margin:0;
 	padding:0;
+	width:inherit;
+}
+
+#IS_instructions {
+	font-size:0.8em;
+}
+
+#IS_selection_holder {
+	width:80%;
+	border:1px solid #ccc;
+	padding:3px;
+	font-size:0.7em;
 }
 
 #IS_selection_popup {
@@ -17,6 +30,19 @@ ul {
 	margin:0;
 	display:none;
 	background-color:#fff;
+	font-size:0.65em;
+}
+
+#IS_submit {
+	color:#fff;
+	background-color:#00cbc0;
+	padding:2px 6px;
+	cursor:pointer;
+	position:fixed;
+	float:right;
+	display:block;
+	right:10px;
+	font-size:0.65em;
 }
 
 #IS_selection_popup a {

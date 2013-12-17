@@ -56,6 +56,28 @@ function parseSelectedPortion() {
 	idx++;
 }
 
+function finish() {
+	$.ajax({
+		url: "/layout/selection_view.html",
+		dataType: "html",
+		success: function(html) {			
+			$.each($("#IS_selection_holder").children('li'), function(i, item) {				
+				var template = $(html).clone();
+				$(template).append($(item).html());
+				
+				var templateHolder = $(document.createElement('div'));
+				$(templateHolder).append($(template));
+				
+				ctx.els[i].innerHtml = $(templateHolder).html();				
+			});
+			port.postMessage({
+				sender: "uiPanel",
+				data: "portionsPrepared"
+			});
+		}
+	});
+}
+
 port = chrome.runtime.connect(extId, {name: "uiPanel"});
 port.onMessage.addListener(function(message) {
 	log("forground received");
@@ -65,15 +87,14 @@ port.onMessage.addListener(function(message) {
 		if(message.data == "portionSelected") {
 			parseSelectedPortion();
 		}
-		
-		if(message.data == "elementsSelected") {
-			initSelections(message.elements);
-		}
 	}
 });
 
 $(document).ready(function() {
 	selectionPopup = $("#IS_selection_popup");
+	
 	$("#IS_label_setter").on('click', setLabel);
+	$("#IS_submit").on('click', finish);
+	
 	initSelections(ctx.els);
 });
