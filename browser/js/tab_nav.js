@@ -31,12 +31,21 @@ function initConfig() {
 	toggleElement($("#IS_step_config"));
 	
 	$("#IS_config_iterate_url").val(ctx.manifest.url);
+	$("#IS_config_header").val(parseHeadersAsText(ctx.manifest.headers));
 }
 
 function setLabel() {	
 	var applyLabel = $(".IS_template_" + selectionPopup.attr('rel'));
 	applyLabel.attr('id',"IS_start_" + $(selectionPopup.find('input')[0]).val());
 	toggleElement(selectionPopup);
+}
+
+function parseHeadersAsText(h) {
+	var hString = "";
+	$.each(h, function(i, item) {
+		hString += (item.name + ": " + item.value + "\n");
+	});
+	return hString;
 }
 
 function parseSelectedPortion() {

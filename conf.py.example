@@ -1,5 +1,2 @@
-M2X_Conf = {
-	'feed_id' : "what is that?",
-	'api_key' : "put that here!",
-	'master_key' : "and that too"
-}
+API_PORT = 8080
+EXT_ID = "what is the chrome extension id?"

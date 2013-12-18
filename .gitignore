@@ -1,3 +1,6 @@
+*.pyc
 UserModels/
+logs/
 conf.py
+test.py
 .DS_Store

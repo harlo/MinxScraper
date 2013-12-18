@@ -1,11 +1,28 @@
+console.info(API_PORT);
+
 var domId = null;
 var manifest = {
 	elements: [],
-	config: {},
+	config: {}
 };
 var panelId = null;
 var port = null;
 var extId = chrome.runtime.id;
+var webRequestOpts = {
+	onSendHeaders : {
+		infoSpec : [
+			'requestHeaders'
+		]
+	},
+	onCompleted: {
+		infoSpec : [
+			'responseHeaders'
+		]
+	},
+	filter : {
+		urls: ["<all_urls>"]
+	}
+}
 
 var contextMenus = {
 	'domutil': {
@@ -23,10 +40,9 @@ var contextMenus = {
 };
 
 function loadDomUtil() {
-	chrome.tabs.query({currentWindow: true, active: true}, function(tabs) {
-		domId = tabs[0].id;
-		manifest.url = tabs[0].url;
-		chrome.tabs.sendMessage(domId, "initDomUtil");
+	chrome.tabs.sendMessage(domId, {
+		sender: extId,
+		data: "initDomUtil"
 	});
 }
 
@@ -34,8 +50,7 @@ function loadScraperPanel() {
 	chrome.windows.create(
 		{
 			'url' : '/layout/minx_browser.html',
-			'type' : 'panel',
-			'width' : 600,
+			'type' : 'panel'
 		},
 		function(window) {
 			panelId = window.id;
@@ -84,18 +99,17 @@ function removeMenuOptions(id) {
 function packageManifest() {
 	var post = { manifest : manifest }
 	console.info(JSON.stringify(post));
-	console.info(JSON.stringify(post).length);
 	
 	var xhr = new XMLHttpRequest();
 	xhr.open("POST", "http://localhost:" + API_PORT, true);
 	xhr.setRequestHeader("Content-type", "application/json");
-	xhr.setRequestHeader("X-MINX-KEY", extId);
 	
 	xhr.onreadystatechange = function() {
 		if(xhr.readyState == 4) {
 			console.info(JSON.parse(xhr.responseText));
 		}
 	};
+	
 	xhr.send(JSON.stringify(post));
 }
 
@@ -103,11 +117,60 @@ function initUiPanelData() {
 	return null;
 }
 
+chrome.webRequest.onCompleted.addListener(
+	function(details) {
+		if(domId != null) {
+		
+			if(details.tabId != undefined && details.tabId == domId) {
+				if(details.url == manifest.url) {
+					console.info(details);
+					
+					for(var i=0, h; h=details.responseHeaders[i]; i++) {
+						if(h.name == "Content-Type") {
+							manifest.contentType = h.value;
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		return true;
+	},
+	webRequestOpts.filter,
+	webRequestOpts.onCompleted.infoSpec
+);
+
+chrome.webRequest.onSendHeaders.addListener(
+	function(details) {
+		if(domId != null) {
+			if(details.tabId != undefined && details.tabId == domId) {
+				if(details.url == manifest.url) {
+					console.info(details);
+					
+					manifest.headers = details.requestHeaders;
+					manifest.method = details.method;
+				}
+			}
+		}
+		
+		return true;
+	},
+	webRequestOpts.filter,
+	webRequestOpts.onSendHeaders.infoSpec
+);
+
+chrome.tabs.onActivated.addListener(function(tab) {
+	console.info("tab changed!");
+	domId = tab.tabId;
+});
+
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 	if(message.sender == "domUtils") {
 		if(message.data == "setElements") {
 			initLabeler();
 			manifest.elements = message.elements;
+			manifest.rootElement = message.rootElement;
 			loadScraperPanel();
 		}
 	}
@@ -143,9 +206,17 @@ chrome.runtime.onConnect.addListener(function(p) {
 });
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-	chrome.tabs.executeScript(tab.id, {file: "/js/dom_utils.js"});	
+	manifest = {
+		elements: [],
+		config: {},
+		url: tab.url
+	};
+	
+	domId = tab.id;
+	chrome.tabs.reload();
+	
+	chrome.tabs.executeScript(domId, {file: "/js/dom_utils.js"});
 	initOptions();
-	console.info(API_PORT);
 });
 
 chrome.windows.onRemoved.addListener(function(windowId) {

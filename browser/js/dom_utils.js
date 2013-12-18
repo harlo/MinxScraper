@@ -2,16 +2,20 @@ var extId = chrome.runtime.id;
 
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 	if(sender.id == extId) {
-		if(message == "initDomUtil") {
+		if(message.data == "initDomUtil") {
 			getSelectedNodes();
 		}		
 	}
 });
 
-function getPathToBody(el) {
+function getPathToBody(el, nodeAsBody) {
 	var pathToBody = [];
+	var bodyRoot = null;
+	if(nodeAsBody == undefined || nodeAsBody == null) {
+		nodeAsBody = "body";
+	}
 	
-	var bodyRoot = document.getElementsByTagName("body")[0];
+	bodyRoot = document.getElementsByTagName(nodeAsBody)[0];	
 	var parent = el.parentNode;
 	var sibling = el;
 	
@@ -30,6 +34,12 @@ function getPathToBody(el) {
 		parent = parent.parentNode;
 		
 	} while(parent != bodyRoot);
+	
+	for(var e=0, el; el=bodyRoot.childNodes[e]; e++) {
+		if(el == sibling) {
+			pathToBody.push(e);
+		}
+	}
 	
 	return pathToBody;
 }
@@ -59,6 +69,7 @@ function getSelectedNodes() {
 	chrome.runtime.sendMessage(null, {
 		sender: "domUtils",
 		data: "setElements",
-		elements: els
+		elements: els,
+		rootElement: "body"
 	});
 }
