@@ -1,5 +1,11 @@
 import os, sys, signal
 
+def getConf(from_path):
+	this_dir = os.path.join(from_path, os.pardir)
+	par_dir = os.path.join(this_dir, os.pardir)
+	
+	return os.path.abspath(os.path.join(par_dir, "conf.json"))
+
 def startDaemon(log_file, pid_file):
 	print "DAEMONIZE"
 	try:

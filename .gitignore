@@ -2,5 +2,6 @@
 UserModels/
 logs/
 conf.py
+conf.json
 test.py
 .DS_Store
