@@ -1,4 +1,5 @@
 import hashlib, os, json, requests, time, re
+from multiprocessing import Process
 from bs4 import BeautifulSoup, element
 
 from asset import Asset
@@ -38,6 +39,42 @@ class Schema(Asset):
 			h[header['name']] = header['value']
 		return h
 	
+	def getEntries(self):
+		entries = []
+		for root, dir, files in os.walk(self.path):
+			for file in files:
+				if re.match(r'^[a-zA-Z0-9]{40}.json', file):
+					f = open(os.path.join(self.path, file), 'rb')
+					entries.append(((json.loads(f.read())), file))
+					f.close()
+		
+		return entries
+	
+	def syncEntries(self):
+		from conf import SYNC_TYPES
+		if len(SYNC_TYPES) == 0: return
+		
+		for entry in self.getEntries():
+			has_synched = True
+			for e in entry[0]['data']:
+				for key in e.keys():
+					value = {
+						'value' : e[key]
+					}
+					
+					for sync_type in SYNC_TYPES:
+						db = None
+						
+						if sync_type == "elasticsearch":
+							from ISData.elasticsearch import Elasticsearch
+							db = Elasticsearch()
+						
+						if db is not None:
+							value['at'] = db.parseTimestamp(entry[0]['timestamp'])
+							has_synched = db.create(key, value)
+			if has_synched:
+				os.remove(os.path.join(self.path, entry[1]))
+						
 	def scrape(self):
 		result = {
 			'result' : STATUS_FAIL[0],
@@ -47,15 +84,13 @@ class Schema(Asset):
 		
 		if not hasattr(self, "contentType"):
 			result['error'] = "no content type!"
+			print result
 			return result
-		else:
-			print self.contentType
 
 		if not hasattr(self, "rootElement"):
 			result['error'] = "no root element!"
+			print result
 			return result
-		else:
-			print "root is %s" % self.rootElement
 	
 		params = None
 		if self.method == "GET":
@@ -66,6 +101,8 @@ class Schema(Asset):
 		if not r.status_code in STATUS_OK:
 			result['result'] = STATUS_FAIL[1]
 			result['error'] = "request failed. try again later"
+			
+			print result
 			return result
 		
 		result['timestamp'] = r.headers['date']
@@ -151,8 +188,18 @@ class Schema(Asset):
 		f.write(scrape_result)
 		f.close()				
 		
-		print result	
+		print result
 		return result
+	
+	def sync(self, period):
+		startDaemon(
+			os.path.join(self.path, "log.txt"), 
+			os.path.join(self.path, "pid.txt")
+		)
+		while True:
+			self.scrape()
+			self.syncEntries()
+			time.sleep(period)
 	
 	def activate(self, activate=True):
 		self.is_active = activate
@@ -178,16 +225,8 @@ class Schema(Asset):
 				self.save()
 				return result
 			
-			'''
-			startDaemon(
-				os.path.join(self.path, "log.txt"), 
-				os.path.join(self.path, "pid.txt")
-			)
-			while True:
-				self.scrape()
-				time.sleep(period)
-			'''
-			self.scrape()
+			p = Process(target=self.sync, args=(period,))
+			p.start()
 		else:
 			stopDaemon(os.path.join(self.path, "pid.txt"))
 		

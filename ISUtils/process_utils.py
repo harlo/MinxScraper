@@ -15,8 +15,8 @@ def startDaemon(log_file, pid_file):
 	os.umask(0)
 	
 	try:
-		pid = os.form()
-		if pix > 0:
+		pid = os.fork()
+		if pid > 0:
 			f = open(pid_file, 'w')
 			f.write(str(pid))
 			f.close()
@@ -35,8 +35,6 @@ def startDaemon(log_file, pid_file):
 	os.dup2(se.fileno(), sys.stderr.fileno())
 
 def stopDaemon(pid_file):
-	print "STOPPING DAEMON"
-	
 	pid = False
 	try:
 		f = open(pid_file, 'r')
@@ -48,6 +46,7 @@ def stopDaemon(pid_file):
 		print "NO PID AT %s" % pid_file
 		
 	if pid:
+		print "STOPPING DAEMON on pid %d" % pid
 		try:
 			os.kill(pid, signal.SIGTERM)
 			return True
