@@ -21,7 +21,6 @@ class M2XDB(Database):
 		except:
 			return
 		
-		print m2x_conf
 		self.url = "http://api-m2x.att.com/v1/feeds/%s" % m2x_conf['feed_id']
 		self.header = {
 			"X-M2X-KEY" : m2x_conf['api_key'],
@@ -29,9 +28,8 @@ class M2XDB(Database):
 			"Accept-Encoding" : "gzip, deflate",
 			"User-Agent" : "python-m2x/%s" % version
 		}
-		print self.url
-		print self.header
-	
+		self.timestamp_format = TIMESTAMP_FORMAT['iso8601']
+			
 	def update(self, stream, asset):
 		try:
 			r = requests.put(
@@ -43,6 +41,7 @@ class M2XDB(Database):
 			print e
 			return False
 		
+		print r.headers
 		print r.status_code
 		print r.content
 
@@ -52,8 +51,9 @@ class M2XDB(Database):
 		return self.update(stream, asset)
 	
 	def indexExists(self, stream):
+		print "%s/streams/%s" % (self.url, stream)
 		try:
-			r = requests.get("%s/streams/%s" % (self.url, stream))
+			r = requests.get("%s/streams/%s" % (self.url, stream), headers=self.header)
 		except requests.exceptions.ConnectionError as e:
 			print e
 			return False
