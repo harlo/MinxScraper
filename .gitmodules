@@ -1,0 +1,3 @@
+[submodule "library/m2x"]
+	path = library/m2x
+	url = https://github.com/citrusbyte/m2x-python.git
