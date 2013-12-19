@@ -13,5 +13,6 @@
 	"permissions" : [
 		"tabs", "http://*/*", "https://*/*",
 		"contextMenus", "webRequest", "webRequestBlocking"
-	]
+	],
+	"options_page" : "/layout/options.html"
 }

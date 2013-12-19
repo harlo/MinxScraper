@@ -5,16 +5,37 @@ import tornado.web
 import tornado.httpserver
 
 from conf import API_PORT, EXT_ID
+from vars import STATUS_OK, STATUS_FAIL
+
+from ISUtils.process_utils import getConf
+
 from ISModels.schema import Schema
 
 log_format = "%(asctime)s %(message)s"
 
 class Res():
 	def __init__(self):
-		self.result = 403
+		self.result = STATUS_FAIL[0]
 	
 	def emit(self):
 		return self.__dict__
+
+class ConfigHandler(tornado.web.RequestHandler):
+	def get(self):
+		res = Res()
+		
+		res.result = STATUS_OK[0]
+		res.data = conf_
+		
+		self.finish(res.emit())
+	
+	def post(self):
+		res = Res()
+		
+		print "update config"
+		print getConfig
+		
+		self.finish(res.emit())
 
 class MainHandler(tornado.web.RequestHandler):
 	def parseRequest(self):
@@ -52,9 +73,8 @@ class MainHandler(tornado.web.RequestHandler):
 		
 		schema = Schema(url, create=True, **s)
 		schema.save()
-		schema.activate()
-		
-		self.finish(res.emit())
+				
+		self.finish(schema.activate())
 	
 	def put(self):
 		res = Res()
@@ -74,7 +94,8 @@ def terminationHandler(signal, frame):
 	sys.exit(0)
 	
 routes = [
-	(r'/', MainHandler)
+	(r'/', MainHandler),
+	(r'/config', ConfigHandler)
 ]
 
 api = tornado.web.Application(routes)
@@ -85,6 +106,17 @@ if __name__ == "__main__":
 	if not os.path.exists(log_dir):
 		os.makedirs(log_dir)
 	log_file = os.path.join(log_dir, "api_log.txt")
+	
+	try:
+		f = open(
+			os.path.join(os.path.dirname(os.path.abspath(__file__)), "conf.json"),
+			'rb'
+		)
+		conf_ = json.loads(f.read())
+		f.close()
+	except IOError as e:
+		print e
+		conf_ = {}
 	
 	logging.basicConfig(filename=log_file, format=log_format, level=logging.INFO)
 	logging.info("API Started.")

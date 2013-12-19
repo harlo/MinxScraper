@@ -5,8 +5,19 @@ from ISModels import Asset
 from vars import TIMESTAMP_FORMAT
 
 class Elasticsearch(Database):
-	def __init__(self, port=9200, root_name="minx"):
+	def __init__(self):
 		super(Elasticsearch, self).__init__()
+		
+		try:
+			f = open(getConf(os.path.abspath(__file__)), 'rb')
+			els_conf = json.loads(f.read())['ELS']
+			f.close()
+			
+			port = els_conf['port']
+			root_name = els_conf['root_name']
+		except:
+			port = 9200
+			root_name = "minx"
 		
 		self.url = "http://localhost:%d/%s/" % (port, root_name)
 		self.timestamp_format = TIMESTAMP_FORMAT['milliseconds']
