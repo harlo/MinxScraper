@@ -58,6 +58,20 @@ function loadScraperPanel() {
 	);
 }
 
+function initScraper(tab) {
+	manifest = {
+		elements: [],
+		config: {},
+		url: tab.url
+	};
+	
+	domId = tab.id;
+	chrome.tabs.reload();
+	
+	chrome.tabs.executeScript(domId, {file: "/js/dom_utils.js"});
+	initOptions();
+}
+
 function initOptions() {
 	removeMenuOptions(contextMenus.domutil.id);
 	
@@ -206,17 +220,7 @@ chrome.runtime.onConnect.addListener(function(p) {
 });
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-	manifest = {
-		elements: [],
-		config: {},
-		url: tab.url
-	};
-	
-	domId = tab.id;
-	chrome.tabs.reload();
-	
-	chrome.tabs.executeScript(domId, {file: "/js/dom_utils.js"});
-	initOptions();
+	initScraper(tab);
 });
 
 chrome.windows.onRemoved.addListener(function(windowId) {

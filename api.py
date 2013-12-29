@@ -7,7 +7,7 @@ import tornado.httpserver
 from conf import API_PORT, EXT_ID
 from vars import STATUS_OK, STATUS_FAIL
 
-from ISUtils.process_utils import getConf
+from ISUtils.process_utils import getScrapers
 
 from ISModels.schema import Schema
 
@@ -22,10 +22,12 @@ class Res():
 
 class ConfigHandler(tornado.web.RequestHandler):
 	def get(self):
-		res = Res()
-		
+		res = Res()		
 		res.result = STATUS_OK[0]
-		res.data = conf_
+		res.data = {
+			'conf' : conf_,
+			'scrapers' : getScrapers(scraper_dir)
+		}
 		
 		self.finish(res.emit())
 	
@@ -33,8 +35,38 @@ class ConfigHandler(tornado.web.RequestHandler):
 		res = Res()
 		
 		print "update config"
-		print getConfig
+		try:
+			s = json.loads(self.request.body)
+			# load up conf
+		except ValueError as e:
+			print e
+			self.finish(res.emit())
+			return
+
+		id_ = s['id']
+		del s['id']
 		
+		f = open(os.path.join(scraper_dir, id_, "conf.json"), 'rb')
+		schema_conf = json.loads(f.read())
+		f.close()
+		
+		print type(s)
+		
+		for key in s.keys():
+			print key
+			if type(s[key]) == dict:
+				for key_ in s[key].keys():
+					schema_conf[key][key_] = s[key][key_]
+			
+			else:
+				schema_conf[key] = s[key]
+		
+		f  = open(os.path.join(scraper_dir, id_, "conf.json"), 'wb+')
+		f.write(schema_conf)
+		f.close()
+		
+		res.result = STATUS_OK[0]
+		print res.emit()
 		self.finish(res.emit())
 
 class MainHandler(tornado.web.RequestHandler):
@@ -103,6 +135,8 @@ signal.signal(signal.SIGINT, terminationHandler)
 
 if __name__ == "__main__":
 	log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+	scraper_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "UserModels")
+	
 	if not os.path.exists(log_dir):
 		os.makedirs(log_dir)
 	log_file = os.path.join(log_dir, "api_log.txt")

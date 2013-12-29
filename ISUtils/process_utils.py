@@ -1,10 +1,31 @@
-import os, sys, signal
+import os, sys, signal, re, json
 
 def getConf(from_path):
 	this_dir = os.path.join(from_path, os.pardir)
 	par_dir = os.path.join(this_dir, os.pardir)
 	
 	return os.path.abspath(os.path.join(par_dir, "conf.json"))
+
+def getScrapers(from_path):
+	scrapers = []
+	for root, dir, files in os.walk(from_path):
+		for file in files:
+			if re.match(r'conf\.json', file) is not None:
+				f = open(os.path.join(root, file), 'rb')
+				try:
+					scraper = json.loads(f.read())
+					del scraper['elements']
+					del scraper['rootElement']
+					scrapers.append(scraper)
+				except:
+					pass
+
+				f.close()
+	
+	if len(scrapers) > 0:
+		return scrapers
+		
+	return None
 
 def startDaemon(log_file, pid_file):
 	print "DAEMONIZE"

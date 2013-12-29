@@ -3,22 +3,54 @@
 <head>
 	<script type="text/javascript" src="/js/jquery.js"></script>
 	<script type="text/javascript" src="/js/mustache.js"></script>
-	<script type="text/javascript" src="/js/options.js"></script>
 	<link rel="stylesheet" type="text/css" href="/css/minx_browser.css" />
 	<title>MinxScraper</title>
 </head>
 
 <body>
 	<h1>MinxScraper Options</h1>
-	<ul>
+	<ol id="IS_scrapers_holder">
+		{{ # scrapers }}
 		<li>
-			<h2>Manage My Scrapers</h2>
-			<div class="IS_option_panel" id="IS_scrapers_holder"></div>
+			<a href="{{ url }}" target="_blank" class="IS_label">{{ url }}</a> 
+			<span class="IS_ui_toggle IS_translate" rel="{{ is_active }}" id="IS_is_active_{{ _id }}">
+				<span class="IS_ui_toggle_a">&nbsp;&nbsp;</span>
+				<span class="IS_ui_toggle_b">&nbsp;&nbsp;</span>
+			</span>
+			<a class="IS_toggleElement" rel="#IS_view_info_{{ _id }}">info...</a>
+			<div style="display:none;" id="IS_view_info_{{ _id }}">
+				<h3>Method <input type="text" id="IS_method_{{ _id }}" value="{{ method }}" /></h3>
+				<h3>Headers</h3>
+				<div id="IS_headers_{{ _id }}">
+					<ul class="IS_headers">
+						{{ # headers }}
+						<li>
+							{{ name }} : 
+							<input type="text" name="{{ name }}" value="{{ value }}" />
+							<a onclick="">[ x ]</a>
+						</li>
+						{{ / headers }}
+					</ul>
+				</div>
+				<h3>Sync Options</h3>
+				<ul>
+					<li>Sync Period: 
+						<input id="IS_config_period_{{ _id }}" type="text" value="{{ config.IS_config_period }}" />
+						<select id="IS_config_period_mult_{{ _id }}" class="IS_ui_select IS_translate" rel="{{ config.IS_config_period_mult}} ">
+							<option value="d">days(s)</option>
+							<option value="h">hour(s)</option>
+							<option value="m">minute(s)</option>
+						</select>
+					</li>
+				</ul>
+				<a class="IS_save_schema" rel="{{ _id }}">Save Changes?</a>
+			</div>
+			<a onclick="">Delete?</a>
 		</li>
-		<li>
-			<h2>Manage Sync Spots</h2>
-			<div class="IS_option_panel" id="IS_sync_spots_holder"></div>
-		</li>
-	</ul>
+		{{ / scrapers }}
+	</ol>
 </body>
-</html
+
+<script type="text/javascript" src="/js/options.js"></script>
+
+</html>
