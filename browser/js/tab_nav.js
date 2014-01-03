@@ -17,10 +17,22 @@ function toggleElement(el) {
 	}
 }
 
+function escapeHtml(html) {	
+	html = html.replace(/&lt;/g, "<");
+	html = html.replace(/&gt;/g, ">");
+	html = html.replace(/\t/g, "");
+	html = html.replace(/\n/g, "");
+
+	return html;
+}
+
 function initSelections(els) {
 	$.each(els, function(idx, item) {
+		log(escapeHtml(item.innerHtml));
+		
 		$("#IS_selection_holder").append(
 			$(document.createElement('li'))
+				//.append(escapeHtml(item.innerHtml))
 				.append(item.innerHtml)
 		);
 	});
@@ -48,16 +60,48 @@ function parseHeadersAsText(h) {
 	return hString;
 }
 
+function insertHtmlAfterSelection(html) {
+    var sel, range, expandedSelRange, node;
+	sel = window.getSelection();
+	if (sel.getRangeAt && sel.rangeCount) {
+		range = window.getSelection().getRangeAt(0);
+		
+		expandedSelRange = range.cloneRange();
+		range.collapse(false);
+
+		// Range.createContextualFragment() would be useful here but is
+		// non-standard and not supported in all browsers (IE9, for one)
+		var el = document.createElement("div");
+		el.innerHTML = html;
+		var frag = document.createDocumentFragment(), node, lastNode;
+		while ( (node = el.firstChild) ) {
+			lastNode = frag.appendChild(node);
+		}
+		range.insertNode(frag);
+
+		// Preserve the selection
+		if (lastNode) {
+			expandedSelRange.setEndAfter(lastNode);
+			sel.removeAllRanges();
+			sel.addRange(expandedSelRange);			
+		}
+	}
+}
+
 function parseSelectedPortion() {
-	var selection = window.getSelection();
+	var selection = window.getSelection();	
 	var range = selection.getRangeAt(0);
 	var html = selection.anchorNode.parentElement;
-	
-	var s = html.innerHTML.substring(0, range.startOffset);
-	var e = html.innerHTML.substring(range.endOffset, html.length);
 	var t = selection.toString();
 	
-	$(html).html(s + '<span class="IS_label IS_template_' + idx + '">' + t + "</span>" + e);
+	var replacement = '<span class="IS_label IS_template_' + idx + '">' + t + '</span>';
+	insertHtmlAfterSelection(replacement);
+	
+	var s = html.innerHTML.substring(0, (html.innerHTML.indexOf(replacement) - t.length));	
+	var r = html.innerHTML.substring(s.length, (s.length + t.length));
+	var e = html.innerHTML.substring((s.length + r.length), html.length);
+
+	$(html).html(s + e);
 	
 	var label = $(".IS_template_" + idx);
 	
@@ -86,7 +130,8 @@ function finishPortions() {
 				
 				ctx.manifest.elements[i].innerHtml = $(templateHolder).html();				
 			});
-
+			
+			log(ctx.manifest.elements);
 			initConfig();
 		}
 	});

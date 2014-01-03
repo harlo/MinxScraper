@@ -185,7 +185,16 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 			initLabeler();
 			manifest.elements = message.elements;
 			manifest.rootElement = message.rootElement;
+			
 			loadScraperPanel();
+		}
+		
+		if(message.data == "schemaPreparedWithXML") {
+			for(var e=0, xml; xml = message.pathToXMLRoot[e]; e++) {
+				manifest.elements[xml.domIndex].xmlPath = xml.tags;
+			}
+
+			packageManifest();
 		}
 	}
 	
@@ -205,7 +214,17 @@ chrome.runtime.onConnect.addListener(function(p) {
 			if(message.data == "schemaPrepared") {
 				console.info(manifest.elements);
 				chrome.windows.remove(panelId);
-				packageManifest();
+				
+				if(manifest.contentType == "text/xml") {
+					manifest.rootElement = "rss";
+					chrome.tabs.sendMessage(domId, {
+						sender: extId,
+						data: "getPathToXMLRoot",
+						elements: manifest.elements
+					});
+				} else {			
+					packageManifest();
+				}
 			}
 			
 			if(message.data == "connectionEstablished") {

@@ -49,9 +49,7 @@ class ConfigHandler(tornado.web.RequestHandler):
 		f = open(os.path.join(scraper_dir, id_, "conf.json"), 'rb')
 		schema_conf = json.loads(f.read())
 		f.close()
-		
-		print type(s)
-		
+				
 		for key in s.keys():
 			print key
 			if type(s[key]) == dict:
