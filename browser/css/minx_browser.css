@@ -38,7 +38,7 @@ ul {
 	font-size:0.95em;
 }
 
-#IS_selection_popup {
+#IS_selection_popup, #IS_iterator_popup {
 	position:absolute;
 	border:1px solid #999;
 	padding:2px 10px;
@@ -46,6 +46,11 @@ ul {
 	display:none;
 	background-color:#fff;
 	font-size:0.85em;
+	z-index:99;
+}
+
+#IS_iterator_popup {
+	top:44%;
 }
 
 #IS_submit_portions, #IS_submit_config {
@@ -62,12 +67,12 @@ ul {
 	display:block;
 }
 
-#IS_submit_config {
+#IS_submit_config, #IS_submit_iterator {
 	position:absolute;
 	bottom:10px;
 }
 
-#IS_selection_popup a {
+#IS_selection_popup a, #IS_iterator_popup a {
 	color:#fff;
 	background-color:#999;
 	padding:1px 3px;

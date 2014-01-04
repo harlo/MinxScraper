@@ -42,6 +42,12 @@ var contextMenus = {
 		callback: function() {
 			port.postMessage({sender: extId, data: "fuzzSelected"});
 		}
+	},
+	iterate_url : {
+		id: 'IS_iterate_portion',
+		callback: function() {
+			port.postMessage({sender: extId, data: "iterateOverURL"});
+		}
 	}
 };
 
@@ -116,6 +122,17 @@ function initLabeler() {
 	});
 }
 
+function initConfiger() {
+	removeMenuOptions();
+	
+	chrome.contextMenus.create({
+		'title' : "Iterate over this URL...",
+		'id' : contextMenus.iterate_url.id,
+		'contexts' : ["selection"],
+		'onclick' : contextMenus.iterate_url.callback
+	});
+}
+
 function removeMenuOption(id) {
 	chrome.contextMenus.remove(id);
 }
@@ -124,7 +141,7 @@ function removeMenuOptions(id) {
 	if(id != undefined) {
 		if(typeof id === 'string') {
 			id = [id];
-		}
+		}		
 	}
 	
 	for(cm in contextMenus) {
@@ -254,6 +271,10 @@ chrome.runtime.onConnect.addListener(function(p) {
 				} else {			
 					packageManifest();
 				}
+			}
+			
+			if(message.data == "initConfiger") {
+				initConfiger();
 			}
 			
 			if(message.data == "connectionEstablished") {

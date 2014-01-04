@@ -40,9 +40,25 @@
 				</div>
 			</li>
 			<li>
+				<div id="IS_iterator_popup">
+						<p>
+							<b>numeric:</b> range, comma-separated (i.e <i>2,399</i>)<br />
+							<b>string array:</b> comma-separated url-friendly values (i.e <i>post, author, date_created</i>
+						</p>
+						<span>
+							<select id="IS_config_iterate_url_type">
+								<option value="n">numeric</option>
+								<option value="s">string array</option>
+							</select>
+							<input size="50" type="text" id="IS_config_iterate_url_value" />
+							<a id="IS_iterator_setter">OK</a>
+						</span>
+						
+					</div>
 				<p>Iterate over this URL: <i>(Advanced!)</i></p>
 				<div class="IS_config_form">
 					<input type="text" id="IS_config_iterate_url" size="80" />
+					
 				</div>
 			</li>
 		</ul>

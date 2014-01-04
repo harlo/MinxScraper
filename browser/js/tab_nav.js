@@ -2,6 +2,7 @@ var extId = chrome.runtime.id;
 var ctx = chrome.extension.getBackgroundPage();
 var idx = 0;
 var selectionPopup = null;
+var iteratorPopup = null;
 
 function log(msg) {
 	ctx.console.info(msg);
@@ -19,7 +20,7 @@ function toggleElement(el) {
 
 function initSelections(els) {
 	$.each(els, function(idx, item) {
-		
+		log(item);
 		$("#IS_selection_holder").append(
 			$(document.createElement('li'))
 				.append(item.innerHtml)
@@ -31,6 +32,11 @@ function initConfig() {
 	toggleElement($("#IS_step_portions"));
 	toggleElement($("#IS_step_config"));
 	
+	port.postMessage({
+		sender: "uiPanel",
+		data: "initConfiger"
+	});
+	
 	$("#IS_config_iterate_url").val(ctx.manifest.url);
 	$("#IS_config_header").val(parseHeadersAsText(ctx.manifest.headers));
 }
@@ -39,6 +45,42 @@ function setLabel() {
 	var applyLabel = $(".IS_template_" + selectionPopup.attr('rel'));
 	applyLabel.attr('id',"IS_start_" + $(selectionPopup.find('input')[0]).val());
 	toggleElement(selectionPopup);
+}
+
+function setIterator() {
+	var operator = null;
+	var value = null;
+	var replacement = iteratorPopup.attr('rel');
+	
+	if(replacement == undefined || replacement == null) {
+		return;
+	}
+	
+	$.each(iteratorPopup.find('input,select'), function(i, item) {		
+		switch($(item).prop('tagName').toLowerCase()) {
+		case "input":
+			if($(item).val() != 0 && $(item).val() != '') {
+				value = $(item).val();
+			}
+			break;
+		case "select":
+			operator = $($(item).children('option:selected')[0]).val();
+			break;
+		}
+	});
+	
+	if(value != null && operator != null) {
+		$("#IS_config_iterate_url").val(
+			$("#IS_config_iterate_url").val().replace(
+				replacement, 
+				("[%" + operator + "]" + value + "[/%" + operator + "]")));
+	}
+	
+	log(value);
+	log(operator);
+	log(replacement);
+	
+	toggleElement(iteratorPopup);
 }
 
 function parseHeadersAsText(h) {
@@ -77,6 +119,18 @@ function insertHtmlAfterSelection(html) {
 	}
 }
 
+function iterateSelectedPortion() {
+	var selection = window.getSelection();	
+	var html = selection.anchorNode.firstElementChild;
+	var t = selection.toString();
+	
+	if(html.id != "IS_config_iterate_url") {
+		return;
+	}
+	
+	iteratorPopup.attr('rel', t);	
+	toggleElement(iteratorPopup);
+}
 
 function fuzzSelectedPortion() {
 	var selection = window.getSelection();	
@@ -197,6 +251,10 @@ port.onMessage.addListener(function(message) {
 			fuzzSelectedPortion();
 		}
 		
+		if(message.data == "iterateOverURL") {
+			iterateSelectedPortion();
+		}
+		
 		if(message.data == "loadAsset") {
 			loadAsset($("#" + message.asset.id), message.asset.value);
 		}
@@ -213,8 +271,10 @@ port.onMessage.addListener(function(message) {
 
 $(document).ready(function() {
 	selectionPopup = $("#IS_selection_popup");
+	iteratorPopup = $("#IS_iterator_popup");
 	
 	$("#IS_label_setter").on('click', setLabel);
+	$("#IS_iterator_setter").on('click', setIterator);
 	
 	$("#IS_submit_portions").on('click', finishPortions);
 	$("#IS_submit_config").on('click', finishSchema);
