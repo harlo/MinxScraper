@@ -14,6 +14,16 @@ Install dependencies (not included in packaging):
 (or see http://www.crummy.com/software/BeautifulSoup/ if you have trouble)
 
 ******
+Chrome Extension
+
+Enable Developer mode in chrome://extensions.
+Click the "Load unpacked extension" button, navigate to 
+	
+	/browser 
+
+and click OK.
+
+******
 Config
 
 Please edit the config files at:
@@ -27,11 +37,11 @@ And copy them as:
 	/conf.py
 
 ******
-Chrome Extension
+Start
 
-Enable Developer mode in chrome://extensions.
-Click the "Load unpacked extension" button, navigate to 
-	
-	/browser 
+	cd MinxScraper
+	python api.py
 
-and click OK.
+Stop
+
+	[ctrl+c]
