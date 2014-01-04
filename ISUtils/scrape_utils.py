@@ -44,6 +44,13 @@ def hasISLabelClass(tag):
 	
 	return False
 
+def hasISFuzzClass(tag):
+	if tag.name == "span":
+		if tag.has_attr('class') and 'IS_fuzzed' in tag.attrs['class']:
+			return True
+	
+	return False
+
 def isISDataRoot(tag):
 	if tag.name == "div":
 		if tag.has_attr('class') and 'IS_data_holder' in tag.attrs['class']:
@@ -65,11 +72,16 @@ def sanitizeForRegex(str):
 	str = str.replace(')', '\)')
 	str = str.replace('-', '\-')
 	return str
+	
+def determinePattern(str):
+	pattern = '.+'
+	if type(asTrueValue(str)) == int:
+		pattern = '\d+'
+	
+	return pattern
 
 def buildRegex(tag):
-	pattern = '(.+)'
-	if type(asTrueValue(tag.get_text())) == int:
-		pattern = '(\d+)'
+	pattern = "(" + determinePattern(tag.get_text()) + ")"
 	
 	parent = "".join(str(e) for e in tag.parent.contents)
 	segments = [sanitizeForRegex(e) for e in parent.split(str(tag))]

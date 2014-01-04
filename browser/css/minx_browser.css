@@ -74,6 +74,13 @@ ul {
 	cursor:pointer;
 }
 
+#IS_selection_holder .IS_fuzzed {
+	background-color:#8d8d8d;
+	color:#fff;
+	padding:0 3px;
+
+}
+
 #IS_selection_holder .IS_label {
 	background-color:#cb008a;
 	color:#fff;

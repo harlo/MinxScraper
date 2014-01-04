@@ -77,6 +77,23 @@ function insertHtmlAfterSelection(html) {
 	}
 }
 
+
+function fuzzSelectedPortion() {
+	var selection = window.getSelection();	
+	var range = selection.getRangeAt(0);
+	var html = selection.anchorNode.parentElement;
+	var t = selection.toString();
+	
+	var replacement = '<span class="IS_fuzzed">' + t + '</span>';
+	insertHtmlAfterSelection(replacement);
+	
+	var s = html.innerHTML.substring(0, (html.innerHTML.indexOf(replacement) - t.length));	
+	var r = html.innerHTML.substring(s.length, (s.length + t.length));
+	var e = html.innerHTML.substring((s.length + r.length), html.length);
+
+	$(html).html(s + e);
+}
+
 function parseSelectedPortion() {
 	var selection = window.getSelection();	
 	var range = selection.getRangeAt(0);
@@ -174,6 +191,10 @@ port.onMessage.addListener(function(message) {
 	if(message.sender == extId) {
 		if(message.data == "portionSelected") {
 			parseSelectedPortion();
+		}
+		
+		if(message.data == "fuzzSelected") {
+			fuzzSelectedPortion();
 		}
 		
 		if(message.data == "loadAsset") {

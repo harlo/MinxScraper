@@ -7,7 +7,7 @@ from vars import CONTENT_TYPE_XML
 
 from asset import Asset
 
-from ISUtils.scrape_utils import isISDataRoot, hasISLabelClass, buildRegex, asTrueValue, sanitizeStr
+from ISUtils.scrape_utils import isISDataRoot, hasISLabelClass, hasISFuzzClass, buildRegex, asTrueValue, sanitizeStr, determinePattern
 from ISUtils.process_utils import startDaemon, stopDaemon
 
 from vars import STATUS_OK, STATUS_FAIL, CONTENT_TYPE_XML, CONTENT_TYPE_HTML
@@ -117,7 +117,7 @@ class Schema(Asset):
 		elif self.contentType in CONTENT_TYPE_HTML:
 			doc = BeautifulSoup(r.content).find(self.rootElement)		
 			nodes = [e for e in doc.contents if type(e) == element.Tag]
-	
+			
 		target_node = None
 		
 		for el in self.elements:
@@ -128,10 +128,10 @@ class Schema(Asset):
 			scrape_nodes = scrape_doc.find_all(hasISLabelClass, recursive=True)
 			if len(scrape_nodes) == 0:
 				continue
-			
+				
 			target_node_found = False
+			
 			if self.contentType in CONTENT_TYPE_XML:
-				# cleans up scrape doc
 				to_keep = []
 				for p in [e for e in scrape_doc.contents if type(e) == element.Tag]:
 					try:
@@ -143,7 +143,15 @@ class Schema(Asset):
 				
 				scrape_doc = BeautifulSoup("".join(to_keep))
 				scrape_nodes = scrape_doc.find_all(hasISLabelClass, recursive=True)
+			
+			#replace the fuzznodes
+			fuzz_nodes = scrape_doc.find_all(hasISFuzzClass, recursive=True)
+			for node in fuzz_nodes:
+				parent_ = node.parent
+				node.previousSibling.replaceWith(node.previousSibling + determinePattern(node.string))
+				node.extract()
 				
+			if self.contentType in CONTENT_TYPE_XML:
 				pathToBody = el['xmlPath'][::-1][1:]
 				for i, p in enumerate(pathToBody):
 					nodes = nodes.findall(p)[0]

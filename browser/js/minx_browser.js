@@ -25,16 +25,22 @@ var webRequestOpts = {
 }
 
 var contextMenus = {
-	'domutil': {
+	domutil: {
 		id: 'IS_select_elements',
 		callback: function() {
 			loadDomUtil();
 		}
 	},
-	'labeler' : {
+	labeler : {
 		id: 'IS_label_portion',
 		callback: function() {
 			port.postMessage({sender: extId, data: "portionSelected"});
+		}
+	},
+	fuzzer : {
+		id: 'IS_fuzz_portion',
+		callback: function() {
+			port.postMessage({sender: extId, data: "fuzzSelected"});
 		}
 	}
 };
@@ -46,12 +52,6 @@ function escapeHtml(html) {
 	//html = html.replace(/\n/g, "");
 
 	return html;
-}
-
-function mergeContent(contentA, contentB) {
-	console.info(escapeHtml(contentA));
-	console.info(escapeHtml(contentB));
-	return contentA;
 }
 
 function loadDomUtil() {
@@ -99,13 +99,20 @@ function initOptions() {
 }
 
 function initLabeler() {
-	removeMenuOptions(contextMenus.labeler.id);
+	removeMenuOptions([contextMenus.labeler.id, contextMenus.fuzzer.id]);
 	
 	chrome.contextMenus.create({
 		'title' : "Label this portion as...",
 		'id' : contextMenus.labeler.id,
 		'contexts' : ["selection"],
 		'onclick' : contextMenus.labeler.callback
+	});
+	
+	chrome.contextMenus.create({
+		'title' : "Fuzz this selection",
+		'id' : contextMenus.fuzzer.id,
+		'contexts' : ["selection"],
+		'onclick' : contextMenus.fuzzer.callback
 	});
 }
 
@@ -114,10 +121,16 @@ function removeMenuOption(id) {
 }
 
 function removeMenuOptions(id) {
+	if(id != undefined) {
+		if(typeof id === 'string') {
+			id = [id];
+		}
+	}
+	
 	for(cm in contextMenus) {
 		var contextMenu = contextMenus[cm];
 		
-		if(id != undefined && contextMenu.id == id) {
+		if(id != undefined && id.indexOf(contextMenu.id) != -1) {
 			continue;
 		}
 		

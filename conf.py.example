@@ -1,4 +1,4 @@
 API_PORT = 8080
 EXT_ID = "what is the chrome extension id?"
 
-SYNC_TYPES = []
+SYNC_TYPES = ['m2x']
