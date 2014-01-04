@@ -62,9 +62,11 @@ function getPathToXMLRoot(els) {
 				
 				// find the tag it belongs to, and its child position
 				var parent = el_.parentNode;
+				//log(el_);
 				//log("FIRST PARENT:");
 				//log(parent);
 				
+				xmlPath.XMLContent = parent.innerText;
 				// is parent node class.text?
 				if(parent.className == "text") {
 					// is parent's sibling "webkit-html-tag"?
@@ -161,9 +163,6 @@ function getPathToXMLRoot(els) {
 									.replace("/","")
 									.replace(">","");
 
-								xmlPath.tags.push(currentTag);
-								breakAway = expanded;								
-								
 								//log("CURRENT TAG:");
 								//log(currentTag);
 								
@@ -173,6 +172,9 @@ function getPathToXMLRoot(els) {
 								if(isRssTag != null && isRssTag.length > 0) {
 									rssTagFound = true;
 								}
+								
+								xmlPath.tags.push(rssTagFound ? "rss" : currentTag);
+								breakAway = expanded;								
 							} else {
 								log("ALSO BROKEN");
 								break;
@@ -185,6 +187,7 @@ function getPathToXMLRoot(els) {
 					} while(!rssTagFound);
 					
 					log(xmlPath);
+					// contentAsXML = whatever is at path
 					pathToXMLRoot.push(xmlPath);
 				}
 			}

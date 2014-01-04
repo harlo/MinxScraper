@@ -39,6 +39,21 @@ var contextMenus = {
 	}
 };
 
+function escapeHtml(html) {	
+	html = html.replace(/&lt;/g, "<");
+	html = html.replace(/&gt;/g, ">");
+	//html = html.replace(/\t/g, "");
+	//html = html.replace(/\n/g, "");
+
+	return html;
+}
+
+function mergeContent(contentA, contentB) {
+	console.info(escapeHtml(contentA));
+	console.info(escapeHtml(contentB));
+	return contentA;
+}
+
 function loadDomUtil() {
 	chrome.tabs.sendMessage(domId, {
 		sender: extId,
@@ -192,6 +207,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 		if(message.data == "schemaPreparedWithXML") {
 			for(var e=0, xml; xml = message.pathToXMLRoot[e]; e++) {
 				manifest.elements[xml.domIndex].xmlPath = xml.tags;
+				manifest.elements[xml.domIndex].xmlContent = escapeHtml(xml.XMLContent);
 			}
 
 			packageManifest();

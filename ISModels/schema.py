@@ -1,10 +1,13 @@
 import hashlib, os, json, requests, time, re
 from multiprocessing import Process
+import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup, element
+from vars import CONTENT_TYPE_XML
+
 
 from asset import Asset
 
-from ISUtils.scrape_utils import isISDataRoot, hasISLabelClass, buildRegex, asTrueValue
+from ISUtils.scrape_utils import isISDataRoot, hasISLabelClass, buildRegex, asTrueValue, sanitizeStr
 from ISUtils.process_utils import startDaemon, stopDaemon
 
 from vars import STATUS_OK, STATUS_FAIL, CONTENT_TYPE_XML, CONTENT_TYPE_HTML
@@ -107,8 +110,14 @@ class Schema(Asset):
 		
 		result['timestamp'] = r.headers['date']
 		
-		doc = BeautifulSoup(r.content).find(self.rootElement)
-		nodes = [e for e in doc.contents if type(e) == element.Tag]
+		if self.contentType in CONTENT_TYPE_XML:
+			doc = ET.fromstring(r.content)
+			nodes = doc
+			
+		elif self.contentType in CONTENT_TYPE_HTML:
+			doc = BeautifulSoup(r.content).find(self.rootElement)		
+			nodes = [e for e in doc.contents if type(e) == element.Tag]
+	
 		target_node = None
 		
 		for el in self.elements:
@@ -121,25 +130,47 @@ class Schema(Asset):
 				continue
 			
 			target_node_found = False
-			for p in el['pathToBody'][::-1]:
-				try:
-					target_node = nodes[p]
-					nodes = [e for e in nodes[p].contents if type(e) == element.Tag]
-				except IndexError as e:
-					print e
-					break
+			if self.contentType in CONTENT_TYPE_XML:
+				# cleans up scrape doc
+				to_keep = []
+				for p in [e for e in scrape_doc.contents if type(e) == element.Tag]:
+					try:
+						if "text" in p.attrs['class']:
+							to_keep.extend([str(e) for e in p.contents if e != ""])
+					except KeyError as e:
+						print e
+						pass
 				
-				if p == el['pathToBody'][0]:	
-					target_node_found = True
+				scrape_doc = BeautifulSoup("".join(to_keep))
+				scrape_nodes = scrape_doc.find_all(hasISLabelClass, recursive=True)
+				
+				pathToBody = el['xmlPath'][::-1][1:]
+				for i, p in enumerate(pathToBody):
+					nodes = nodes.findall(p)[0]
+					if i == len(pathToBody) - 1:
+						target_node_found = True
+						target_node = BeautifulSoup(nodes.text)
+					
+			elif self.contentType in CONTENT_TYPE_HTML:
+				for p in el['pathToBody'][::-1]:
+					try:
+						target_node = nodes[p]
+						nodes = [e for e in nodes[p].contents if type(e) == element.Tag]
+					except IndexError as e:
+						print e
+						break
+				
+					if p == el['pathToBody'][0]:	
+						target_node_found = True
 	
 			if target_node is None or not target_node_found:	
 				continue
 			
-			for node in scrape_nodes:
+			for node in scrape_nodes:	
 				path_to_node_top = []
 				parent = node.parent
 				sibling = node
-		
+												
 				while parent is not None:
 					sibling_path = 0
 					for p in [e for e in parent.contents if type(e) == element.Tag]:
@@ -150,26 +181,50 @@ class Schema(Asset):
 
 					sibling = parent
 					parent = parent.parent
-				path_to_node_top = path_to_node_top[1:-1]
+				
+				#print path_to_node_top
+				
+				if self.contentType in CONTENT_TYPE_XML:
+					path_to_node_top = path_to_node_top[::-1][:-1]
+				elif self.contentType in CONTENT_TYPE_HTML:
+					path_to_node_top = path_to_node_top[1:-1]
+					
+				#print path_to_node_top
+				
 		
 				inner_target_node = None
 				inner_target_node_found = False
+				
 				nodes = [e for e in target_node.contents if type(e) == element.Tag]
+				
 				for i, p in enumerate(path_to_node_top):
+					'''
+					print i, p
+					print BeautifulSoup("".join([str(e) for e in nodes])).prettify()
+					print [e.name for e in nodes]
+					print "\n*********\n"
+					'''
+				
 					try:
 						inner_target_node = nodes[p]
 						nodes = [e for e in nodes[p].contents if type(e) == element.Tag]
+						if i == len(path_to_node_top) -1:
+							inner_target_node_found = True
 					except IndexError as e:
+						print e, i, p
 						if i == len(path_to_node_top) -1:					
 							inner_target_node_found = True
 							break
 		
 				if inner_target_node is not None and inner_target_node_found:
+					#print inner_target_node
+					
 					regex = buildRegex(node)
+					print regex
 					inner_target_content = " ".join(
 						[str(s) for s in inner_target_node.contents]
 					)
-			
+					
 					match = re.findall(re.compile(regex[1]), inner_target_content)
 					if len(match) >= 1:
 						result['matches'] += 1
@@ -208,6 +263,8 @@ class Schema(Asset):
 		}
 		
 		if activate:
+			self.scrape()
+			'''
 			period = 0
 
 			try:
@@ -227,6 +284,7 @@ class Schema(Asset):
 			
 			p = Process(target=self.sync, args=(period,))
 			p.start()
+			'''
 		else:
 			stopDaemon(os.path.join(self.path, "pid.txt"))
 		

@@ -17,22 +17,11 @@ function toggleElement(el) {
 	}
 }
 
-function escapeHtml(html) {	
-	html = html.replace(/&lt;/g, "<");
-	html = html.replace(/&gt;/g, ">");
-	html = html.replace(/\t/g, "");
-	html = html.replace(/\n/g, "");
-
-	return html;
-}
-
 function initSelections(els) {
 	$.each(els, function(idx, item) {
-		log(escapeHtml(item.innerHtml));
 		
 		$("#IS_selection_holder").append(
 			$(document.createElement('li'))
-				//.append(escapeHtml(item.innerHtml))
 				.append(item.innerHtml)
 		);
 	});

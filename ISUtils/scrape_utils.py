@@ -50,10 +50,29 @@ def isISDataRoot(tag):
 			return True
 	
 	return False
+	
+def sanitizeStr(str):
+	str = str.replace('\t',"")
+	str = str.replace('\n', "")
+	str = str.replace('\r', "")
+	return str
+
+def sanitizeForRegex(str):
+	# remove whitespace
+	str = sanitizeStr(str)
+	str = str.replace('<br/>',"")
+	str = str.replace('(', '\(')
+	str = str.replace(')', '\)')
+	str = str.replace('-', '\-')
+	return str
 
 def buildRegex(tag):
 	pattern = '(.+)'
 	if type(asTrueValue(tag.get_text())) == int:
 		pattern = '(\d+)'
+	
+	parent = "".join(str(e) for e in tag.parent.contents)
+	segments = [sanitizeForRegex(e) for e in parent.split(str(tag))]
+	pattern = ('.*' + segments[0] + pattern + segments[1] + '.*')
 	
 	return tag.attrs['id'].replace("IS_start_", ""), pattern
