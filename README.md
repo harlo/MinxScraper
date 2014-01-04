@@ -1,6 +1,8 @@
 # MinxScraper
 
 ******
+Setup
+
 After cloning, run
 
 	git submodule update --init --recursive
@@ -14,12 +16,22 @@ Install dependencies (not included in packaging):
 ******
 Config
 
-please edit the config files at:
+Please edit the config files at:
 
 	/conf.json.example
 	/conf.py.example
 
-and copy them as
+And copy them as:
 
 	/conf.json
 	/conf.py
+
+******
+Chrome Extension
+
+Enable Developer mode in chrome://extensions.
+Click the "Load unpacked extension" button, navigate to 
+	
+	/browser 
+
+and click OK.
