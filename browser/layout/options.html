@@ -7,27 +7,83 @@
 	<title>MinxScraper - Config</title>
 </head>
 
-<body>
-	<h1>MinxScraper Options</h1>
+<body class="IS_body_config">
+	<h1>MinxScraper</h1>
+	
+	<h2>Sync</h2>
+	<ol id="IS_sync_holder">
+		{{ # sync }}
+		<li>
+			<table>
+				<tr>
+					<td>
+						<a rel="#IS_view_sync_vars_{{ database}}" class="IS_label IS_toggleElement">{{ database }}</a>
+					</td>
+					<td>
+						<div class="IS_status_toggle IS_activate_sync" id="IS_status_toggle_{{ database }}" rel="{{ is_active }}" >
+							<a class="IS_status_toggle_on">On</a>
+							<a class="IS_status_toggle_off">Off</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+			<div style="display:none;" id="IS_view_sync_vars_{{ database }}">
+				<ul id="IS_sync_vars_{{ database }}">
+					{{ # vars }}
+					<li>
+						<p>{{ key }} <input type="text" size="70" value="{{ value }}" /></p>
+					</li>
+					{{ / vars }}
+				</ul>
+				<a class="IS_save_sync" rel="{{ database }}">Save Changes?</a>
+			</div>
+		</li>
+		{{ / sync }}
+	</ol>
+	
+	<table width="100%">
+		<tr>
+			<td width="10%">
+				<h2>Feeds</h2>
+			</td>
+			<td>
+				<div id="IS_master_scrape_holder">
+					<a class="IS_master_ctrl IS_green" rel="start">Start All</a>
+					<a class="IS_master_ctrl IS_red" rel="stop">Stop All</a>
+				</div>
+			</td>
+		</tr>
+	</table>
 	<ol id="IS_scrapers_holder">
 		{{ # scrapers }}
 		<li>
-			<a href="{{ url }}" target="_blank" class="IS_label">{{ url }}</a> 
-			<span class="IS_ui_toggle IS_translate" rel="{{ is_active }}" id="IS_is_active_{{ _id }}">
-				<span class="IS_ui_toggle_a">&nbsp;&nbsp;</span>
-				<span class="IS_ui_toggle_b">&nbsp;&nbsp;</span>
-			</span>
-			<a class="IS_toggleElement" rel="#IS_view_info_{{ _id }}">info...</a>
+			<table>
+				<tr>
+					<td>
+						<a rel="#IS_view_info_{{ _id }}" class="IS_label IS_toggleElement">{{ url }}</a>
+					</td>
+					<td>
+						<div class="IS_status_toggle IS_activate_schema" id="IS_is_active_{{ _id }}" rel="{{ is_active }}">
+							<a class="IS_status_toggle_on">On</a>
+							<a class="IS_status_toggle_off">Off</a>
+						</div>
+					</td>
+					<td>
+						<a class="IS_delete_schema" rel="{{ _id }}">Remove</a>
+					</td>
+				</tr>
+			</table>
 			<div style="display:none;" id="IS_view_info_{{ _id }}">
 				<h3>Method <input type="text" id="IS_method_{{ _id }}" value="{{ method }}" /></h3>
+				<h3>Iterator <input size="100" type="text" id="IS_iterator_{{ _id }}" value="{{ config.IS_config_iterate_url }}" /></h3>
 				<h3>Headers</h3>
 				<div id="IS_headers_{{ _id }}">
 					<ul class="IS_headers">
 						{{ # headers }}
-						<li>
+						<li id="IS_header_{{ name }}">
 							{{ name }} : 
-							<input type="text" name="{{ name }}" value="{{ value }}" />
-							<a onclick="">[ x ]</a>
+							<input size="80" type="text" name="{{ name }}" value="{{ value }}" />
+							<a class="IS_remove_opt" rel="IS_header_{{ name }}">[ x ]</a>
 						</li>
 						{{ / headers }}
 					</ul>
@@ -45,7 +101,6 @@
 				</ul>
 				<a class="IS_save_schema" rel="{{ _id }}">Save Changes?</a>
 			</div>
-			<a onclick="">Delete?</a>
 		</li>
 		{{ / scrapers }}
 	</ol>

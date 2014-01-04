@@ -16,36 +16,50 @@ class M2XDB(Database):
 		
 		try:
 			f = open(getConf(os.path.abspath(__file__)), 'rb')
-			m2x_conf = json.loads(f.read())['M2X']
+			self.conf = json.loads(f.read())['M2X']
 			f.close()
 		except:
+			self.conf = {}
 			return
 		
-		self.url = "http://api-m2x.att.com/v1/feeds/%s" % m2x_conf['feed_id']
+		try:
+			self.is_active = self.conf['is_active']
+		except KeyError as e:
+			print "is_active not yet set for M2X.  using False as default"
+			self.is_active = False
+			
+		self.url = "http://api-m2x.att.com/v1/feeds/%s" % self.conf['feed_id']
 		self.header = {
-			"X-M2X-KEY" : m2x_conf['api_key'],
+			"X-M2X-KEY" : self.conf['api_key'],
 			"Content-type" : "application/json",
 			"Accept-Encoding" : "gzip, deflate",
 			"User-Agent" : "python-m2x/%s" % version
 		}
 		self.timestamp_format = TIMESTAMP_FORMAT['iso8601']
-			
+	
+	def updateConfig(self, config):
+		self.conf = super(M2XDB, self).updateConfig("M2X", config)
+		return True
+	
 	def update(self, stream, asset):
-		try:
-			r = requests.post(
-				"%s/streams/%s/values" % (self.url, stream), 
-				data=json.dumps({ 'values' : [asset]}),
-				headers=self.header
-			)
-		except requests.exceptions.ConnectionError as e:
-			print e
-			return False
+		if self.is_active:
+			try:
+				r = requests.post(
+					"%s/streams/%s/values" % (self.url, stream), 
+					data=json.dumps({ 'values' : [asset]}),
+					headers=self.header
+				)
+			except requests.exceptions.ConnectionError as e:
+				print e
+				return False
 		
-		print r.headers
-		print r.status_code
-		print r.content
+			print r.headers
+			print r.status_code
+			print r.content
 
-		return r.status_code in STATUS_OK
+			return r.status_code in STATUS_OK
+
+		return False
 	
 	def create(self, stream, asset):
 		return self.update(stream, asset)

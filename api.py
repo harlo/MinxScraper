@@ -13,6 +13,17 @@ from ISModels.schema import Schema
 
 log_format = "%(asctime)s %(message)s"
 
+def getConf():
+	try:
+		f = open(path_to_conf,'rb')
+		conf_ = json.loads(f.read())
+		f.close()
+	except IOError as e:
+		print e
+		conf_ = {}
+	
+	return conf_
+
 class Res():
 	def __init__(self):
 		self.result = STATUS_FAIL[0]
@@ -20,12 +31,76 @@ class Res():
 	def emit(self):
 		return self.__dict__
 
+class EngineHandler(tornado.web.RequestHandler):
+	def initialize(self, action):
+		self.action = action
+		
+	def post(self, action):
+		res = Res()
+		
+		if action == "sync":			
+			try:
+				s = json.loads(self.request.body)
+				db_name = s['database']
+				del s['database']
+			except ValueError as e:
+				print e
+				self.finish(res.emit())
+				return
+			except KeyError as e:
+				print e
+				self.finish(res.emit())
+				return
+			
+			db = None
+			if db_name == "M2X":
+				from ISData.m2xdb import M2XDB
+				db = M2XDB()
+			
+			if db is not None:
+				db.updateConfig(s)
+				res.result = STATUS_OK[0]	
+		else:		
+			activate = False
+			if action == "start":
+				activate = True
+			
+			for scraper in getScrapers(scraper_dir):
+				s = Schema(scraper['url'])
+				if s.is_active != activate:
+					s.activate(activate=activate)
+		
+			res.result = STATUS_OK[0]
+		
+		self.finish(res.emit())
+
 class ConfigHandler(tornado.web.RequestHandler):
 	def get(self):
 		res = Res()		
 		res.result = STATUS_OK[0]
+		
+		conf_ = getConf()		
+		sync = []
+		for key in conf_:
+			s = {
+				'vars' : [],
+				'database': key
+			}
+			
+			for var in conf_[key].keys():
+				if var == "is_active":
+					s['is_active'] = conf_[key][var]
+					continue
+					
+				s['vars'].append({
+					'key' : var,
+					'value' : conf_[key][var]
+				})
+				
+			sync.append(s)
+		
 		res.data = {
-			'conf' : conf_,
+			'sync' : sync,
 			'scrapers' : getScrapers(scraper_dir)
 		}
 		
@@ -34,35 +109,44 @@ class ConfigHandler(tornado.web.RequestHandler):
 	def post(self):
 		res = Res()
 		
-		print "update config"
 		try:
 			s = json.loads(self.request.body)
-			# load up conf
 		except ValueError as e:
 			print e
 			self.finish(res.emit())
 			return
-
+		
 		id_ = s['id']
 		del s['id']
 		
+		print "update config"
+		
 		f = open(os.path.join(scraper_dir, id_, "conf.json"), 'rb')
-		schema_conf = json.loads(f.read())
+		schema = Schema(json.loads(f.read())['url'])
 		f.close()
-				
+		
+		should_activate = None
 		for key in s.keys():
-			print key
-			if type(s[key]) == dict:
-				for key_ in s[key].keys():
-					schema_conf[key][key_] = s[key][key_]
+			if key == "is_active":
+				should_activate = s[key]
+				continue
 			
+			if type(s[key]) == dict:
+				val = getattr(schema, key)
+				
+				for key_ in s[key].keys():
+					val[key_] = s[key][key_]
+
+				schema.setattr(key, val)			
 			else:
-				schema_conf[key] = s[key]
+				schema.setattr(key, s[key])
 		
-		f  = open(os.path.join(scraper_dir, id_, "conf.json"), 'wb+')
-		f.write(schema_conf)
-		f.close()
+		schema.save()
 		
+		if should_activate is not None:
+			print "with activation: %s!" % should_activate
+			schema.activate(activate=should_activate)
+			
 		res.result = STATUS_OK[0]
 		print res.emit()
 		self.finish(res.emit())
@@ -125,7 +209,8 @@ def terminationHandler(signal, frame):
 	
 routes = [
 	(r'/', MainHandler),
-	(r'/config', ConfigHandler)
+	(r'/config', ConfigHandler),
+	(r'/engine/(start|stop|sync)', EngineHandler, dict(action=None))
 ]
 
 api = tornado.web.Application(routes)
@@ -134,21 +219,11 @@ signal.signal(signal.SIGINT, terminationHandler)
 if __name__ == "__main__":
 	log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
 	scraper_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "UserModels")
+	path_to_conf = os.path.join(os.path.dirname(os.path.abspath(__file__)), "conf.json")
 	
 	if not os.path.exists(log_dir):
 		os.makedirs(log_dir)
 	log_file = os.path.join(log_dir, "api_log.txt")
-	
-	try:
-		f = open(
-			os.path.join(os.path.dirname(os.path.abspath(__file__)), "conf.json"),
-			'rb'
-		)
-		conf_ = json.loads(f.read())
-		f.close()
-	except IOError as e:
-		print e
-		conf_ = {}
 	
 	logging.basicConfig(filename=log_file, format=log_format, level=logging.INFO)
 	logging.info("API Started.")

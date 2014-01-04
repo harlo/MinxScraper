@@ -81,10 +81,12 @@ def determinePattern(str):
 	return pattern
 
 def buildRegex(tag):
+	print tag
 	pattern = "(" + determinePattern(tag.get_text()) + ")"
 	
 	parent = "".join(str(e) for e in tag.parent.contents)
 	segments = [sanitizeForRegex(e) for e in parent.split(str(tag))]
+	print segments[1]
 	pattern = ('.*' + segments[0] + pattern + segments[1] + '.*')
 	
 	return tag.attrs['id'].replace("IS_start_", ""), pattern

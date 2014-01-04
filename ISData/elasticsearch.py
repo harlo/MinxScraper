@@ -12,12 +12,20 @@ class Elasticsearch(Database):
 			f = open(getConf(os.path.abspath(__file__)), 'rb')
 			els_conf = json.loads(f.read())['ELS']
 			f.close()
-			
-			port = els_conf['port']
-			root_name = els_conf['root_name']
 		except:
-			port = 9200
-			root_name = "minx"
+			els_conf = {
+				'port' : 9200,
+				'root_name' : "minx"
+			}
+			
+		port = els_conf['port']
+		root_name = els_conf['root_name']
+		
+		try:
+			self.is_active = els_conf['is_active']
+		except KeyError as e:
+			print "is_active not yet set for Elasticsearch.  using False as default"
+			self.is_active = False
 		
 		self.url = "http://localhost:%d/%s/" % (port, root_name)
 		self.timestamp_format = TIMESTAMP_FORMAT['milliseconds']
@@ -56,20 +64,21 @@ class Elasticsearch(Database):
 		return False
 	
 	def update(self, river, asset, _id):
-		try:
-			r = requests.put("%s%s/%s" % (self.url, river, _id), data=json.dumps(asset))
-		except requests.exceptions.ConnectionError as e:
-				print e
-				return False
+		if self.is_active:
+			try:
+				r = requests.put("%s%s/%s" % (self.url, river, _id), data=json.dumps(asset))
+			except requests.exceptions.ConnectionError as e:
+					print e
+					return False
 
-		print r.text
-		result = json.loads(r.text)
-		
-		try:
-			return result['ok']
-		except KeyError as e:
 			print r.text
+			result = json.loads(r.text)
 		
+			try:
+				return result['ok']
+			except KeyError as e:
+				print r.text
+
 		return False
 	
 	def create(self, river, asset, _id=None):

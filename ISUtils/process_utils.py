@@ -78,6 +78,6 @@ def stopDaemon(pid_file):
 			os.kill(pid, signal.SIGTERM)
 			return True
 		except OSError as e:
-			"could not kill process at PID %d" % pid
+			print "could not kill process at PID %d" % pid
 
 	return False

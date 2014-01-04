@@ -1,4 +1,4 @@
-import time
+import time, json, os
 from vars import TIMESTAMP_FORMAT
 __metaclass__ = type
 
@@ -23,6 +23,23 @@ class Database():
 	
 	def createIndex(self, **args):
 		print "creating a new index on database"
+	
+	def updateConfig(self, db_name, config):
+		print "updating sync properties for this database"
+		from ISUtils.process_utils import getConf
+		
+		f = open(getConf(os.path.abspath(__file__)), 'rb')
+		c = json.loads(f.read())
+		f.close()
+		
+		for key in config.keys():
+			c[db_name][key] = config[key]
+		
+		f = open(getConf(os.path.abspath(__file__)), 'wb+')
+		f.write(json.dumps(c))
+		f.close()
+		
+		return c[db_name]
 	
 	def parseTimestamp(self, timestamp):
 		print "parsing timestamp %s according to %d" % (timestamp, self.timestamp_format)

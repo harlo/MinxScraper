@@ -91,3 +91,51 @@ ul {
 	color:#fff;
 	padding:0 3px;
 }
+
+.IS_green, .IS_red, body.IS_body_config a.IS_delete_schema:hover {
+	color:#fff;
+	padding:4px;
+}
+
+.IS_green {
+	background-color:#6bb300;
+}
+
+.IS_red, body.IS_body_config a.IS_delete_schema:hover {
+	background-color:#b33900;
+}
+
+body.IS_body_config a {
+	cursor:pointer;
+}
+
+body.IS_body_config a.IS_toggleElement:hover, body.IS_body_config a.IS_save_schema:hover,
+body.IS_body_config a.IS_save_sync:hover {
+	color:#fff;
+	background-color:#00cbc0;
+}
+
+#IS_master_scrape_holder {
+	display:inline;
+	margin:4px;
+	padding:10px;
+}
+
+div.IS_status_toggle {
+	margin:0;
+	padding:4px 0;
+	background-color:#ccc;
+	border:1px solid #999;
+}
+
+div.IS_status_toggle a {
+	color:#999;
+	background-color:#ccc;
+	padding:4px;
+	margin:0;
+}
+
+div.IS_status_toggle a.IS_status_active {
+	color:#fff;
+	background-color:#00cbc0;
+}
