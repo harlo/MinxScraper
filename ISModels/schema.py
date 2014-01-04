@@ -58,31 +58,35 @@ class Schema(Asset):
 		
 		for entry in self.getEntries():
 			has_synched = True
-			for e in entry[0]['data']:
-				for key in e.keys():
-					value = {
-						'value' : e[key]
-					}
+			try:
+				for e in entry[0]['data']:
+					for key in e.keys():
+						value = {
+							'value' : e[key]
+						}
 					
-					for sync_type in SYNC_TYPES:
-						db = None
+						for sync_type in SYNC_TYPES:
+							db = None
 						
-						if sync_type == "elasticsearch":
-							from ISData.elasticsearch import Elasticsearch
-							db = Elasticsearch()
-						elif sync_type == "m2x":
-							from ISData.m2xdb import M2XDB
-							db = M2XDB()
+							if sync_type == "elasticsearch":
+								from ISData.elasticsearch import Elasticsearch
+								db = Elasticsearch()
+							elif sync_type == "m2x":
+								from ISData.m2xdb import M2XDB
+								db = M2XDB()
 						
-						if db is not None:
-							value['at'] = db.parseTimestamp(entry[0]['timestamp'])
-							if not db.indexExists(key):
-								if not db.createIndex(key):
-									return
+							if db is not None:
+								value['at'] = db.parseTimestamp(entry[0]['timestamp'])
+								if not db.indexExists(key):
+									if not db.createIndex(key):
+										return
 								
-							has_synched = db.create(key, value)
-						else:
-							has_synched = False
+								has_synched = db.create(key, value)
+							else:
+								has_synched = False
+			except KeyError as e:
+				print e
+				has_synched = False
 							
 			if has_synched:
 				os.remove(os.path.join(self.path, entry[1]))
