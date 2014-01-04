@@ -1,3 +1,9 @@
 [submodule "library/m2x"]
 	path = library/m2x
 	url = https://github.com/citrusbyte/m2x-python.git
+[submodule "library/requests"]
+	path = library/requests
+	url = git@github.com:kennethreitz/requests.git
+[submodule "library/tornado"]
+	path = library/tornado
+	url = git@github.com:facebook/tornado.git
