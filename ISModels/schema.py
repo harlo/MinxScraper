@@ -287,10 +287,7 @@ class Schema(Asset):
 		}
 		
 		if activate:
-			self.scrape()
-			'''
 			period = 0
-
 			try:
 				period = int(self.config['IS_config_period']) * 60 * 1000
 				if self.config['IS_config_period_mult'] == "h":
@@ -308,7 +305,6 @@ class Schema(Asset):
 			
 			p = Process(target=self.sync, args=(period,))
 			p.start()
-			'''
 		else:
 			stopDaemon(os.path.join(self.path, "pid.txt"))
 		
