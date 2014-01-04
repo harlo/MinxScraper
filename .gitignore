@@ -5,3 +5,5 @@ conf.py
 conf.json
 test.py
 .DS_Store
+docs/*.mp4
+docs/*.mov

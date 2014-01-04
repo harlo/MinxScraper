@@ -39,8 +39,12 @@ And copy them as:
 ******
 Start
 
+First:
+
 	cd MinxScraper
 	python api.py
+
+Then use the chrome extension.  See this video for help: [http://www.youtube.com/watch?v=3zVlcJeAssk]
 
 Stop
 
