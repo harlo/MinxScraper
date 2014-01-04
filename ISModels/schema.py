@@ -4,7 +4,6 @@ import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup, element
 from vars import CONTENT_TYPE_XML
 
-
 from asset import Asset
 
 from ISUtils.scrape_utils import isISDataRoot, hasISLabelClass, hasISFuzzClass, buildRegex, asTrueValue, sanitizeStr, determinePattern
@@ -71,10 +70,20 @@ class Schema(Asset):
 						if sync_type == "elasticsearch":
 							from ISData.elasticsearch import Elasticsearch
 							db = Elasticsearch()
+						elif sync_type == "m2x":
+							from ISData.m2xdb import M2XDB
+							db = M2XDB()
 						
 						if db is not None:
 							value['at'] = db.parseTimestamp(entry[0]['timestamp'])
+							if not db.indexExists(key):
+								if not db.createIndex(key):
+									return
+								
 							has_synched = db.create(key, value)
+						else:
+							has_synched = False
+							
 			if has_synched:
 				os.remove(os.path.join(self.path, entry[1]))
 						

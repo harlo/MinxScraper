@@ -32,9 +32,9 @@ class M2XDB(Database):
 			
 	def update(self, stream, asset):
 		try:
-			r = requests.put(
-				"%s/streams/%s" % (self.url, stream), 
-				data=json.dumps(asset),
+			r = requests.post(
+				"%s/streams/%s/values" % (self.url, stream), 
+				data=json.dumps({ 'values' : [asset]}),
 				headers=self.header
 			)
 		except requests.exceptions.ConnectionError as e:
