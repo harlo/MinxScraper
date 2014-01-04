@@ -4,7 +4,7 @@
 	"description" : "Create screen-scraping jobs on the fly",
 	"version" : "0.1",
 	"browser_action" : {
-		"default_icon" : "/images/minx_logo_16.png"
+		"default_icon" : "/images/minx_logo_128.png"
 	},
 	"background" : {
 		"scripts" : ["/js/conf.js", "/js/minx_browser.js"],
@@ -14,5 +14,6 @@
 		"tabs", "http://*/*", "https://*/*",
 		"contextMenus", "webRequest", "webRequestBlocking"
 	],
-	"options_page" : "/layout/options.html"
+	"options_page" : "/layout/options.html",
+	"icons": { "16": "/images/minx_logo_16.png", "128": "/images/minx_logo_128.png" }
 }
