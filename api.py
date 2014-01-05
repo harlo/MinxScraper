@@ -65,9 +65,19 @@ class EngineHandler(tornado.web.RequestHandler):
 			if action == "start":
 				activate = True
 			
+			res.data = {
+				"started" : [],
+				"stopped" : []
+			}
+			
 			for scraper in getScrapers(scraper_dir):
 				s = Schema(scraper['url'])
 				if s.is_active != activate:
+					status = "started"
+					if not activate:
+						status = "stopped"
+						
+					res.data[status].append(s._id)
 					s.activate(activate=activate)
 		
 			res.result = STATUS_OK[0]

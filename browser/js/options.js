@@ -6,7 +6,18 @@ function sendAction() {
 	xhr.open("POST", "http://localhost:" + ctx.API_PORT + "/engine/" + action, true);
 	xhr.onreadystatechange = function() {
 		if(xhr.readyState == 4) {
-			console.info(JSON.parse(xhr.responseText));
+			var r = JSON.parse(xhr.responseText);
+			console.info(r);
+			
+			$.each(r.data.started, function(idx, item) {
+				$("#IS_is_active_" + item).attr('rel', true);
+				updateActivated($("#IS_is_active_" + item));
+			});
+			
+			$.each(r.data.stopped, function(idx, item) {
+				$("#IS_is_active_" + item).attr('rel', false);
+				updateActivated($("#IS_is_active_" + item));
+			});
 		}
 	};
 	
