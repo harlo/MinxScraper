@@ -156,7 +156,7 @@ function removeMenuOptions(id) {
 }
 
 function packageManifest() {
-	var post = { manifest : manifest }
+	var post = { manifest : manifest };
 	console.info(JSON.stringify(post));
 	
 	var xhr = new XMLHttpRequest();
@@ -170,6 +170,45 @@ function packageManifest() {
 	};
 	
 	xhr.send(JSON.stringify(post));
+}
+
+function testSchema() {
+	var post = { manifest : manifest };
+	post.manifest['confirm'] = true;
+	
+	console.info(post);
+	
+
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", "http://localhost:" + API_PORT, true);
+	xhr.setRequestHeader("Content-type", "application/json");
+	xhr.onreadystatechange = function() {
+		if(xhr.readyState == 4) {
+			var readout = "";
+			var r = JSON.parse(xhr.responseText);
+			if(r.matches > 0) {
+				for(var d=0; d < r.data.length; d++) {
+					for(key in r.data[d]) {
+						readout += (
+							'<span class="IS_label">' + 
+							key + ":</span> " + 
+							r.data[d][key]);
+					}
+				}
+			} else {
+				readout = "No results from this scrape.";
+			}
+			
+			port.postMessage({
+				sender: extId,
+				data: "confirmTest",
+				readout: readout
+			});
+		}
+	};
+	
+	xhr.send(JSON.stringify(post));
+	
 }
 
 function initUiPanelData() {
@@ -240,7 +279,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 				manifest.elements[xml.domIndex].xmlContent = escapeHtml(xml.XMLContent);
 			}
 
-			packageManifest();
+			testSchema();
 		}
 	}
 	
@@ -261,6 +300,7 @@ chrome.runtime.onConnect.addListener(function(p) {
 				console.info(manifest.elements);
 				chrome.windows.remove(panelId);
 				
+				/*
 				if(manifest.contentType == "text/xml") {
 					manifest.rootElement = "rss";
 					chrome.tabs.sendMessage(domId, {
@@ -271,6 +311,8 @@ chrome.runtime.onConnect.addListener(function(p) {
 				} else {			
 					packageManifest();
 				}
+				*/
+				packageManifest();
 			}
 			
 			if(message.data == "initConfiger") {
@@ -283,6 +325,19 @@ chrome.runtime.onConnect.addListener(function(p) {
 					data: "connectionEstablished",
 					initData: initUiPanelData()
 				});
+			}
+			
+			if(message.data == "testSchema") {
+				if(manifest.contentType == "text/xml") {
+					manifest.rootElement = "rss";
+					chrome.tabs.sendMessage(domId, {
+						sender: extId,
+						data: "getPathToXMLRoot",
+						elements: manifest.elements
+					});
+				} else {
+					testSchema();
+				}
 			}
 		}
 	});	

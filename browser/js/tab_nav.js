@@ -3,6 +3,11 @@ var ctx = chrome.extension.getBackgroundPage();
 var idx = 0;
 var selectionPopup = null;
 var iteratorPopup = null;
+var panelDivs = [
+	"#IS_step_portions",
+	"#IS_step_confirm",
+	"#IS_step_config"
+];
 
 function log(msg) {
 	ctx.console.info(msg);
@@ -18,7 +23,17 @@ function toggleElement(el) {
 	}
 }
 
+function showOnlyElement(el) {
+	$.each(panelDivs, function(idx, item) {
+		$(item).css('display','none');
+	});
+	
+	$(el).css('display', 'block');
+}
+
 function initSelections(els) {
+	showOnlyElement("#IS_step_portions");
+	
 	$.each(els, function(idx, item) {
 		log(item);
 		$("#IS_selection_holder").append(
@@ -28,9 +43,17 @@ function initSelections(els) {
 	});
 }
 
+function initConfirmation() {
+	showOnlyElement("#IS_step_confirm");
+	
+	port.postMessage({
+		sender: "uiPanel",
+		data: "testSchema"
+	});
+}
+
 function initConfig() {
-	toggleElement($("#IS_step_portions"));
-	toggleElement($("#IS_step_config"));
+	showOnlyElement("#IS_step_config");
 	
 	port.postMessage({
 		sender: "uiPanel",
@@ -192,7 +215,7 @@ function finishPortions() {
 			});
 			
 			log(ctx.manifest.elements);
-			initConfig();
+			initConfirmation();
 		}
 	});
 }
@@ -266,6 +289,10 @@ port.onMessage.addListener(function(message) {
 				// load all this data
 			}
 		}
+		
+		if(message.data == "confirmTest") {
+			$("#IS_confirm_readout").html(message.readout);
+		}
 	}
 });
 
@@ -278,6 +305,7 @@ $(document).ready(function() {
 	
 	$("#IS_submit_portions").on('click', finishPortions);
 	$("#IS_submit_config").on('click', finishSchema);
+	$("#IS_confirm_scraper").on('click', initConfig);
 		
 	port.postMessage({
 		sender: "uiPanel",

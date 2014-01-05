@@ -195,10 +195,27 @@ class MainHandler(tornado.web.RequestHandler):
 		url = s['url']
 		del s['url']
 		
-		schema = Schema(url, create=True, **s)
-		schema.save()
+		as_test = False
+		try:
+			as_test = s['confirm']
+			print "found confirm directive: %s" % as_test
+			del s['confirm']
+		except KeyError as e:
+			print "no confirm directive"
+			print e
+			pass
+		
+		as_test = True
+		
+		if not as_test:
+			schema = Schema(url, create=True, **s)
+			schema.save()
 				
-		self.finish(schema.activate())
+			self.finish(schema.activate())
+		else:
+			schema = Schema(url, create=False, as_test=True, **s)
+			print json.dumps(schema.emit())
+			self.finish(schema.scrape(as_test=True))
 	
 	def put(self):
 		res = Res()

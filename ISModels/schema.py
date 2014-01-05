@@ -12,7 +12,7 @@ from ISUtils.process_utils import startDaemon, stopDaemon
 from vars import STATUS_OK, STATUS_FAIL, CONTENT_TYPE_XML, CONTENT_TYPE_HTML
 
 class Schema(Asset):
-	def __init__(self, url, create=False, **args):
+	def __init__(self, url, create=False, as_test=False, **args):
 		super(Schema, self).__init__()
 		
 		self.url = url
@@ -24,14 +24,15 @@ class Schema(Asset):
 		
 		self.path = os.path.abspath(os.path.join(user_models_dir, self._id))
 		
-		if not os.path.exists(self.path):
-			if create:
-				os.makedirs(self.path)
-				self.save()
+		if not as_test:
+			if not os.path.exists(self.path):
+				if create:
+					os.makedirs(self.path)
+					self.save()
+				else:
+					return
 			else:
-				return
-		else:
-			self.inflate()
+				self.inflate()
 		
 		self.inflate(inflate=args)
 		
@@ -91,7 +92,7 @@ class Schema(Asset):
 			if has_synched:
 				os.remove(os.path.join(self.path, entry[1]))
 						
-	def scrape(self):
+	def scrape(self, as_test=False):
 		result = {
 			'result' : STATUS_FAIL[0],
 			'matches' : 0,
@@ -111,17 +112,18 @@ class Schema(Asset):
 		params = None
 		urls = [self.url]
 		
-		if self.config['IS_config_iterate_url'] != self.url:
-			for front, s,v,e, back in re.findall(
-				r'(.*)(\[%[s|n]\])(.*)(\[/%[s|n]\])(.*)', self.config['IS_config_iterate_url']):
-				operator = re.findall(r'\[%([s|n])\]', s)[0]
-				if operator == "n":
-					r = [int(d) for d in v.split(",")]
-					for d in xrange(r[0], r[1]):
-						urls.append(front + str(d) + back)			
-				elif operator == "s":
-					for d in v.split(","):
-						urls.append(front + d + back)
+		if not as_test:
+			if self.config['IS_config_iterate_url'] != self.url:
+				for front, s,v,e, back in re.findall(
+					r'(.*)(\[%[s|n]\])(.*)(\[/%[s|n]\])(.*)', self.config['IS_config_iterate_url']):
+					operator = re.findall(r'\[%([s|n])\]', s)[0]
+					if operator == "n":
+						r = [int(d) for d in v.split(",")]
+						for d in xrange(r[0], r[1]):
+							urls.append(front + str(d) + back)			
+					elif operator == "s":
+						for d in v.split(","):
+							urls.append(front + d + back)
 		
 		for url in urls:
 			print "TRYING URL %s" % url
@@ -273,12 +275,13 @@ class Schema(Asset):
 			if result['matches'] == 0:
 				del result['data']
 		
-			scrape_result = json.dumps(result)
-			scrape_hash = hashlib.sha1(scrape_result).hexdigest()
-
-			f = open(os.path.join(self.path, "%s.json" % scrape_hash), 'wb+')
-			f.write(scrape_result)
-			f.close()				
+			if not as_test:
+				scrape_result = json.dumps(result)
+				scrape_hash = hashlib.sha1(scrape_result).hexdigest()
+			
+				f = open(os.path.join(self.path, "%s.json" % scrape_hash), 'wb+')
+				f.write(scrape_result)
+				f.close()				
 		
 		print result
 		return result

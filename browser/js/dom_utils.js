@@ -1,4 +1,5 @@
 var extId = chrome.runtime.id;
+var debug = true;
 
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 	if(sender.id == extId) {
@@ -62,9 +63,11 @@ function getPathToXMLRoot(els) {
 				
 				// find the tag it belongs to, and its child position
 				var parent = el_.parentNode;
-				//log(el_);
-				//log("FIRST PARENT:");
-				//log(parent);
+				if(debug) {
+					log(el_);
+					log("FIRST PARENT:");
+					log(parent);
+				}
 				
 				xmlPath.XMLContent = parent.innerText;
 				// is parent node class.text?
@@ -88,13 +91,18 @@ function getPathToXMLRoot(els) {
 					log("first tag still not found!");
 					// if not, is parent node in node calss collapsible-content?
 					if(parent.parentNode.className == "collapsible-content") {
-						//log("PARENT:");
-						//log(parent);
+						if(debug) {
+							log("PARENT:");
+							log(parent);
+						}
 						
 						for(var j=0, el__; el__ = parent.parentNode.parentNode.childNodes[j]; j++) {
-							//log("EL__:");
-							//log(el__);
-							inspect = el__;
+							if(debug) {
+								log("EL__:");
+								log(el__);
+							}
+							
+							//inspect = el__;
 							
 							if(el__.className == "line" && xmlPath.tag == null) {
 								var tags = el__.getElementsByClassName(rssTag);
@@ -113,8 +121,11 @@ function getPathToXMLRoot(els) {
 						}
 						
 						if(xmlPath.tags.length == 0) {
-							//log("PREVIOUS SIBLING:");
-							//log(breakAway.previousSibling);
+							if(debug) {
+								log("PREVIOUS SIBLING:");
+								log(breakAway.previousSibling);
+							}
+							
 							log("first tag STILL not found!");
 							var s = breakAway.previousSibling
 								.getElementsByClassName(rssTag);
@@ -136,8 +147,10 @@ function getPathToXMLRoot(els) {
 					var rssTagFound = false;
 					
 					do {
-						//log("BREAK AWAY:");
-						//log(breakAway);
+						if(debug) {
+							log("BREAK AWAY:");
+							log(breakAway);
+						}
 						
 						var expanded = null;
 						
@@ -149,11 +162,14 @@ function getPathToXMLRoot(els) {
 						}
 						
 						if(expanded != null && expanded.previousSibling != null) {
-							//log("EXPANDED:");
-							//log(expanded);
+							if(debug) {
+								log("EXPANDED:");
+								log(expanded);
 							
-							//log("PREVIOUS SIBLING:");
-							//log(expanded.previousSibling);
+								log("PREVIOUS SIBLING:");
+								log(expanded.previousSibling);
+							}
+							
 							var s = expanded.previousSibling
 								.getElementsByClassName(rssTag);
 							
@@ -163,8 +179,10 @@ function getPathToXMLRoot(els) {
 									.replace("/","")
 									.replace(">","");
 
-								//log("CURRENT TAG:");
-								//log(currentTag);
+								if(debug) {
+									log("CURRENT TAG:");
+									log(currentTag);
+								}
 								
 								var isRssTag = currentTag.match(/^rss/g);
 								log(isRssTag);
