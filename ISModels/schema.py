@@ -293,7 +293,7 @@ class Schema(Asset):
 						if len(match) >= 1:
 							result['matches'] += 1
 							result['data'].append({
-								regex[0] : match[0]
+								regex[0] : match[0].strip()
 							})
 
 			result['result'] = STATUS_OK[0]

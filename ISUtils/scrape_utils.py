@@ -71,10 +71,10 @@ def sanitizeForRegex(str):
 	str = str.replace('(', '\(')
 	str = str.replace(')', '\)')
 	str = str.replace('-', '\-')
+	str = str.replace('+', '\+')
+	str = str.replace('?', '\?')
 	
-	# if string starts with or ends with a bunch of spaces, crop
-	
-	return str
+	return str.strip()
 	
 def determinePattern(str):
 	pattern = '.+'
@@ -102,7 +102,6 @@ def buildRegex(tag):
 	
 	parent = "".join(str(e) for e in tag.parent.contents)
 	segments = [sanitizeForRegex(e) for e in parent.split(str(tag))]
-	print segments[1]
 	pattern = ('.*' + segments[0] + pattern + segments[1] + '.*')
 	
 	if isEmptyRegex(pattern):
