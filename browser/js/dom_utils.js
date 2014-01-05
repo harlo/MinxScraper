@@ -236,10 +236,21 @@ function getPathToBody(el, nodeAsBody) {
 		for(var e=0, el; el=parent.childNodes[e]; e++) {
 			if(el == sibling) {
 				pathToBody.push(siblingPath);
+				
+				if(debug) {
+					console.info("SIBLING (at " + siblingPath + ")");
+					console.info(sibling);
+			
+					console.info("PARENT:");
+					console.info(parent);
+				}
+				
 				break;
 			}
 		
-			siblingPath++;
+			if(el.nodeType == 1) {
+				siblingPath++;
+			}
 		}
 	
 		sibling = parent;
@@ -247,9 +258,20 @@ function getPathToBody(el, nodeAsBody) {
 		
 	} while(parent != bodyRoot);
 	
+	siblingPath = 0;
 	for(var e=0, el; el=bodyRoot.childNodes[e]; e++) {
 		if(el == sibling) {
-			pathToBody.push(e);
+			if(debug) {
+				console.info("FITTING LAST NODE INTO BODY AT " + siblingPath);
+				console.info(sibling);
+			}
+			
+			pathToBody.push(siblingPath);
+			break;
+		}
+		
+		if(el.nodeType == 1) {
+			siblingPath++;
 		}
 	}
 	
@@ -276,6 +298,9 @@ function getSelectedNodes() {
 				pathToBody: getPathToBody(el)
 			};			
 			els.push(m);
+		}
+		if(debug) {
+			break;
 		}
 	}
 	
