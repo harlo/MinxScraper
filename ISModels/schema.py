@@ -182,8 +182,17 @@ class Schema(Asset):
 					node.previousSibling.replaceWith(node.previousSibling + determinePattern(node.string))
 					node.extract()
 				
+				if as_test:
+					print "\n\nTEMPLATE:"
+					print scrape_doc
+				
 				if self.contentType in CONTENT_TYPE_XML:
 					pathToBody = el['xmlPath'][::-1][1:]
+					
+					if as_test:
+						print "\n\nXML PATH:"
+						print pathToBody
+						
 					for i, p in enumerate(pathToBody):
 						nodes = nodes.findall(p)[0]
 						if i == len(pathToBody) - 1:
@@ -191,7 +200,13 @@ class Schema(Asset):
 							target_node = BeautifulSoup(nodes.text)
 					
 				elif self.contentType in CONTENT_TYPE_HTML:
-					for p in el['pathToBody'][::-1]:
+					pathToBody = el['pathToBody'][::-1]
+					
+					if as_test:
+						print "\n\nHTML PATH:"
+						print pathToBody
+						
+					for i, p in enumerate(pathToBody):
 						try:
 							target_node = nodes[p]
 							nodes = [e for e in nodes[p].contents if type(e) == element.Tag]
@@ -221,16 +236,18 @@ class Schema(Asset):
 						sibling = parent
 						parent = parent.parent
 				
-					#print path_to_node_top
+					if as_test:
+						print path_to_node_top
 				
 					if self.contentType in CONTENT_TYPE_XML:
 						path_to_node_top = path_to_node_top[::-1][:-1]
 					elif self.contentType in CONTENT_TYPE_HTML:
 						path_to_node_top = path_to_node_top[1:-1]
 					
-					#print path_to_node_top
+					if as_test:
+						print "\n\nTARGET NODE FROM LIVE HTML"
+						print target_node
 				
-		
 					inner_target_node = None
 					inner_target_node_found = False
 				
@@ -250,21 +267,29 @@ class Schema(Asset):
 							if i == len(path_to_node_top) -1:
 								inner_target_node_found = True
 						except IndexError as e:
-							print e, i, p
 							if i == len(path_to_node_top) -1:					
 								inner_target_node_found = True
 								break
 		
 					if inner_target_node is not None and inner_target_node_found:
-						#print inner_target_node
+						if as_test:
+							print "\n\nINNER TARGET NODE:"
+							print inner_target_node
 					
 						regex = buildRegex(node)
-						print regex
+						
 						inner_target_content = " ".join(
 							[str(s) for s in inner_target_node.contents]
 						)
-					
-						match = re.findall(re.compile(regex[1]), inner_target_content)
+						
+						if as_test:
+							print "\n\nINNER TARGET CONTENT:"
+							print inner_target_content
+						
+						print "\n\nREGEX:"
+						print regex
+						match = re.findall(
+							re.compile(regex[1]), sanitizeStr(inner_target_content))
 						if len(match) >= 1:
 							result['matches'] += 1
 							result['data'].append({
@@ -283,7 +308,9 @@ class Schema(Asset):
 				f.write(scrape_result)
 				f.close()				
 		
+		print "\n\nSCRAPE RESULT:"
 		print result
+		
 		return result
 	
 	def sync(self, period):

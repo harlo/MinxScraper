@@ -71,6 +71,9 @@ def sanitizeForRegex(str):
 	str = str.replace('(', '\(')
 	str = str.replace(')', '\)')
 	str = str.replace('-', '\-')
+	
+	# if string starts with or ends with a bunch of spaces, crop
+	
 	return str
 	
 def determinePattern(str):
@@ -80,7 +83,20 @@ def determinePattern(str):
 	
 	return pattern
 
+def isEmptyRegex(regex):
+	empty_regex = '\.\*[\s| ]*\(\.\+\)[\s| ]*\.\*'
+	rx = re.findall(re.compile(empty_regex), regex)
+	
+	print "\n\nCHECKING \'%s\' FOR MEANINGLESS REGEX:" % regex
+	print rx
+	
+	if len(rx) > 0:
+		return True
+
+	return False
+
 def buildRegex(tag):
+	print "TAG FROM REGEX:"
 	print tag
 	pattern = "(" + determinePattern(tag.get_text()) + ")"
 	
@@ -88,5 +104,8 @@ def buildRegex(tag):
 	segments = [sanitizeForRegex(e) for e in parent.split(str(tag))]
 	print segments[1]
 	pattern = ('.*' + segments[0] + pattern + segments[1] + '.*')
+	
+	if isEmptyRegex(pattern):
+		pattern = "(.*)"
 	
 	return tag.attrs['id'].replace("IS_start_", ""), pattern
