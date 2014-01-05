@@ -299,9 +299,6 @@ function getSelectedNodes() {
 			};			
 			els.push(m);
 		}
-		if(debug) {
-			break;
-		}
 	}
 	
 	chrome.runtime.sendMessage(null, {
