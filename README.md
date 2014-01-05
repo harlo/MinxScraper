@@ -7,6 +7,11 @@ After cloning, run
 
 	git submodule update --init --recursive
 
+Install the submodules tornado, requests, and m2x
+
+	cd library/[package]
+	sudo python setup.py install
+
 Install dependencies (not included in packaging):
 
 	sudo pip install beautifulsoup4
