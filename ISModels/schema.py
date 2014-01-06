@@ -179,8 +179,39 @@ class Schema(Asset):
 				fuzz_nodes = scrape_doc.find_all(hasISFuzzClass, recursive=True)
 				for node in fuzz_nodes:
 					parent_ = node.parent
-					node.previousSibling.replaceWith(node.previousSibling + determinePattern(node.string))
+					replacement = determinePattern(node.string)
+					
+					if as_test:
+						print "\n\nFUZZ NODE PARENT AND TEXT"
+						print parent_
+					
+					if node.previousSibling is not None:
+						print node.previousSibling
+						
+						try:
+							node.previousSibling.replaceWith(
+								node.previousSibling + replacement)
+						except TypeError as e:
+							print e
+							print "\n\nMODIFYING PARENT AS TEXT NODE"
+							
+							parent_parent = BeautifulSoup(
+								"<div></div>").find_all('div')[0]
+							parent_parent.append(parent_)
+
+							rx = '<span class="IS_fuzzed">%s</span>' % node.string
+							parent_ = str(parent_parent.contents[0]).replace(
+								rx, replacement)
+					else:
+						# create a previous sibling as text (replacement)
+						# previous sibling is text.
+						sibling = BeautifulSoup().new_string(replacement)
+						node.insert_before(sibling)
+
 					node.extract()
+					
+					if as_test:
+						print parent_
 				
 				if as_test:
 					print "\n\nTEMPLATE:"
@@ -207,17 +238,40 @@ class Schema(Asset):
 						print pathToBody
 						
 					for i, p in enumerate(pathToBody):
+						if as_test and target_node is not None:
+							print "\n\nNODE TYPES:"
+							for b in target_node:
+								print type(b)
+							print "\n"
+						
 						try:
 							target_node = nodes[p]
 							nodes = [e for e in nodes[p].contents if type(e) == element.Tag]
 						except IndexError as e:
 							print e
+							print i, p
+							print "only have %d nodes.  Last:\n" % len(nodes)
+							print nodes[len(nodes) - 1]					
+							
+							if as_test:
+								pass
+								
+								
+								'''
+								print BeautifulSoup(
+									"".join([str(e) for e in target_node])).prettify()
+								pass
+								'''
+								
 							break
 				
 						if p == el['pathToBody'][0]:	
 							target_node_found = True
-	
-				if target_node is None or not target_node_found:	
+
+				if target_node is None or not target_node_found:
+					if as_test:
+						print "\n\nTARGET NODE NOT FOUND"
+						
 					continue
 			
 				for node in scrape_nodes:	
@@ -237,6 +291,7 @@ class Schema(Asset):
 						parent = parent.parent
 				
 					if as_test:
+						print "\n\nPATH TO NODE TOP:"
 						print path_to_node_top
 				
 					if self.contentType in CONTENT_TYPE_XML:
@@ -251,25 +306,37 @@ class Schema(Asset):
 					inner_target_node = None
 					inner_target_node_found = False
 				
+					if as_test:
+						print "\n\nTARGET NODE NAME"
+						print target_node.name
+					
 					nodes = [e for e in target_node.contents if type(e) == element.Tag]
+					if len(nodes) == 0:
+						nodes = BeautifulSoup(target_node.contents[0])
+						inner_target_node = nodes
+						inner_target_node_found = True
+						
+					print "\n\nNODES:"
+					print nodes
 				
-					for i, p in enumerate(path_to_node_top):
-						'''
-						print i, p
-						print BeautifulSoup("".join([str(e) for e in nodes])).prettify()
-						print [e.name for e in nodes]
-						print "\n*********\n"
-						'''
+					if inner_target_node is None and not inner_target_node_found:
+						for i, p in enumerate(path_to_node_top):
+							'''
+							print i, p
+							print BeautifulSoup("".join([str(e) for e in nodes])).prettify()
+							print [e.name for e in nodes]
+							print "\n*********\n"
+							'''
 				
-						try:
-							inner_target_node = nodes[p]
-							nodes = [e for e in nodes[p].contents if type(e) == element.Tag]
-							if i == len(path_to_node_top) -1:
-								inner_target_node_found = True
-						except IndexError as e:
-							if i == len(path_to_node_top) -1:					
-								inner_target_node_found = True
-								break
+							try:
+								inner_target_node = nodes[p]
+								nodes = [e for e in nodes[p].contents if type(e) == element.Tag]
+								if i == len(path_to_node_top) -1:
+									inner_target_node_found = True
+							except IndexError as e:
+								if i == len(path_to_node_top) -1:					
+									inner_target_node_found = True
+									break
 		
 					if inner_target_node is not None and inner_target_node_found:
 						if as_test:

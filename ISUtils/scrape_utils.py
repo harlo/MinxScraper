@@ -103,9 +103,15 @@ def isEmptyRegex(regex):
 	return False
 
 def buildRegex(tag):
-	print "TAG FROM REGEX:"
-	print tag
-	pattern = "(" + determinePattern(tag.get_text()) + ")"
+	if type(tag) == element.Tag:
+		txt = tag.get_text()
+	else:
+		txt = str(tag)
+		
+	print "\n\nTAG/TXT FROM REGEX:"
+	print txt
+		
+	pattern = "(" + determinePattern(txt) + ")"
 	
 	parent = "".join(str(e) for e in tag.parent.contents)
 	segments = [doubleSanitizeForRegex(e) for e in parent.split(str(tag))]
