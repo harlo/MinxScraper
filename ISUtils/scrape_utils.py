@@ -72,10 +72,14 @@ def sanitizeForRegex(str):
 	str = str.replace(')', '\)')
 	str = str.replace('-', '\-')
 	
-	'''
+	return str.strip()
+
+def doubleSanitizeForRegex(str):
+	str = sanitizeForRegex(str)
+	
 	str = str.replace('+', '\+')
 	str = str.replace('?', '\?')
-	'''
+	str = str.replace('.', '\.')
 	
 	return str.strip()
 	
@@ -104,7 +108,7 @@ def buildRegex(tag):
 	pattern = "(" + determinePattern(tag.get_text()) + ")"
 	
 	parent = "".join(str(e) for e in tag.parent.contents)
-	segments = [sanitizeForRegex(e) for e in parent.split(str(tag))]
+	segments = [doubleSanitizeForRegex(e) for e in parent.split(str(tag))]
 	pattern = ('.*' + segments[0] + pattern + segments[1] + '.*')
 	
 	if isEmptyRegex(pattern):
