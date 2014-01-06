@@ -60,6 +60,10 @@ function getPathToXMLRoot(els) {
 				};
 				
 				var breakAway = getDomElementFromPath(el.pathToBody);
+				if(debug) {
+					log("BREAKAWAY");
+					log(breakAway);
+				}
 				
 				// find the tag it belongs to, and its child position
 				var parent = el_.parentNode;
@@ -72,10 +76,16 @@ function getPathToXMLRoot(els) {
 				xmlPath.XMLContent = parent.innerText;
 				// is parent node class.text?
 				if(parent.className == "text") {
-					// is parent's sibling "webkit-html-tag"?
-					for(var j=0, el__; el__ = parent.parentNode.childNodes[j]; j++) {
-						if(el__.className == rssTag && xmlPath.tag == null) {
+					// is parent's sibling "webkit-html-tag"?					
+					var grandparent = parent.parentNode;
+					if(grandparent.className == "IS_data_holder") {
+						grandparent = breakAway.parentNode;
+					}
+					
+					for(var j=0, el__; el__ = grandparent.childNodes[j]; j++) {
+						if(el__.className == rssTag) {
 							log("first tag found!");
+							log(el__.innerText);
 							xmlPath.tags.push(el__.innerText
 								.replace("<","")
 								.replace("/","")
@@ -108,6 +118,7 @@ function getPathToXMLRoot(els) {
 								var tags = el__.getElementsByClassName(rssTag);
 								if(tags.length > 0) {
 									log("first tag found!");
+									log(tags[0]);
 									xmlPath.tags.push(tags[0].innerText
 										.replace("<","")
 										.replace("/","")
@@ -159,6 +170,8 @@ function getPathToXMLRoot(els) {
 							expanded = breakAway.parentNode.parentNode.parentNode;
 						} else if(breakAway.parentNode.className=="collapsible-content") {
 							expanded = breakAway.parentNode;
+						} else if(breakAway.parentNode.className=="line") {
+							expanded = breakAway.parentNode.parentNode;
 						}
 						
 						if(expanded != null && expanded.previousSibling != null) {

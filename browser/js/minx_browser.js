@@ -63,7 +63,8 @@ function escapeHtml(html) {
 function loadDomUtil() {
 	chrome.tabs.sendMessage(domId, {
 		sender: extId,
-		data: "initDomUtil"
+		data: "initDomUtil",
+		contentType : manifest.contentType
 	});
 }
 
