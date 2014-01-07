@@ -114,7 +114,7 @@ def buildRegex(tag):
 	pattern = "(" + determinePattern(txt) + ")"
 	
 	parent = "".join(str(e) for e in tag.parent.contents)
-	segments = [doubleSanitizeForRegex(e) for e in parent.split(str(tag))]
+	segments = [sanitizeForRegex(e) for e in parent.split(str(tag))]
 	pattern = ('.*' + segments[0] + pattern + segments[1] + '.*')
 	
 	if isEmptyRegex(pattern):
